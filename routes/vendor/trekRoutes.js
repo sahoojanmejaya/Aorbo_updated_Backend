@@ -283,6 +283,8 @@ router.get("/tbr-statistics", trekController.getTbrStatistics);
 router.get("/pending-balance", trekController.getPendingBalanceCollection);
 router.get("/:id", trekController.getTrekById);
 router.post("/", validateTrek, trekController.createTrek);
+//router.get("/admin_treks", trekController.getAdminAllBatches);
+
 
 // New unified trek creation endpoint (transactional)
 // Note: This route is COMPLETELY handled in app.js with multer middleware

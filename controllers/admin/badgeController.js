@@ -347,3 +347,39 @@ exports.updateBadgeSortOrder = async (req, res) => {
         });
     }
 };
+
+//krishna functions 
+
+/*exports.toggleStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status, performerId, performerName } = req.body;
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        await connection.query('UPDATE badges SET status = ?, last_action_at = NOW() WHERE id = ?', [status, id]);
+
+        // Audit Log
+        await connection.query(`
+      INSERT INTO audit_logs (id, timestamp, performer_id, performer_name, action, entity_id, entity_name, details, module)
+      VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, 'BADGE')
+    `, [
+            `LOG-${Date.now()}`,
+            performerId || 'SYS',
+            performerName || 'Admin',
+            status === 'ACTIVE' ? 'ACTIVATED' : 'DEACTIVATED',
+            id,
+            'Unknown',
+            `Status changed to ${status}`
+        ]);
+
+        await connection.commit();
+        res.json({ message: `Status updated to ${status}` });
+    } catch (err) {
+        await connection.rollback();
+        res.status(500).json({ error: err.message });
+    } finally {
+        connection.release();
+    }
+};*/

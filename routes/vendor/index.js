@@ -3,6 +3,7 @@ const router = express.Router();
 const authMiddleware = require("../../middleware/authMiddleware");
 
 // Import vendor route modules
+const taxRoutes = require("./taxesRoutes");
 const authRoutes = require("./authRoutes");
 const trekRoutes = require("./trekRoutes");
 const bookingRoutes = require("./bookingRoutes");
@@ -26,6 +27,8 @@ const kycRoutes = require("./kycRoutes");
 const disputeRoutes = require("./disputeRoutes");
 const bookingDisputeRoutes = require("./bookingDisputeRoutes");
 const walletRoutes = require("./walletRoutes");
+const vendorRoutes = require("./vinRoutes");
+const trekAdminRoutes = require("./trekAdminRoutes");
 
 // Mount /auth routes (public: login/register)
 router.use("/auth", authRoutes);
@@ -108,12 +111,20 @@ router.use("/batches", batchRoutes);
 router.use("/disputes", disputeRoutes);
 router.use("/dispute-booking", bookingDisputeRoutes);
 router.use("/wallet", walletRoutes);
+router.use("/vindetails", vendorRoutes);
+router.use("/trekdetails", trekAdminRoutes);
+router.use("/taxes", taxRoutes);
+
+
+
+
+
 
 // Vendor API info
 router.get("/", (req, res) => {
     res.json({
         version: "1.0.0",
-        name: "Arobo Vendor Panel API",
+        name: "Arobo Vendor Panel API6666666",
         description: "Vendor-specific endpoints for the Arobo platform",
         endpoints: {
             auth: "/api/vendor/auth",
@@ -128,7 +139,11 @@ router.get("/", (req, res) => {
             trekCaptains: "/api/vendor/trek-captains",
             reviews: "/api/vendor/reviews",
             wallet: "/api/vendor/wallet",
+           taxes: "/api/vendor/taxes",
+            
         },
+          // 👇 ADD THIS
+            
         authentication:
             "JWT token required for all endpoints except /auth/login and /auth/register",
     });

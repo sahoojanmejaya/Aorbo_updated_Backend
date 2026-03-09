@@ -475,7 +475,7 @@ exports.getBookingById = async (req, res) => {
                                 "end_date",
                                 "available_slots",
                             ],
-                            where: { id: sequelize.col("booking.batch_id") },
+                            where: { id: sequelize.col("Booking.batch_id") },
                             required: false,
                         },
                     ],
@@ -523,20 +523,20 @@ exports.getBookingById = async (req, res) => {
                     ],
                     required: false,
                 },
-                {
-                    model: PaymentLog,
-                    as: "payment_logs",
-                    attributes: [
-                        "id",
-                        "amount",
-                        "payment_method",
-                        "transaction_id",
-                        "status",
-                        "created_at",
-                    ],
-                    order: [["created_at", "DESC"]],
-                    required: false,
-                },
+         //       {
+//                     model: PaymentLog,
+//                     as: "payment_logs",
+//                     attributes: [
+//                         "id",
+//                         "amount",
+//                         "payment_method",
+//                         "transaction_id",
+//                         "status",
+//                         "created_at",
+//                     ],
+//                     order: [["created_at", "DESC"]],
+//                     required: false,
+//                 },
             ],
         });
 

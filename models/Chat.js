@@ -42,6 +42,8 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: 0,
                 comment: "Unread messages count for admin",
             },
+             
+    
         },
         {
             tableName: "chats",
@@ -58,10 +60,10 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "admin_id",
             as: "admin",
         });
-        Chat.hasMany(models.Message, {
-            foreignKey: "chat_id",
-            as: "messages",
-        });
+       // Chat.hasMany(models.Message, {
+         //   foreignKey: "chat_id",
+         //   as: "messages",
+        //});
     };
 
     return Chat;

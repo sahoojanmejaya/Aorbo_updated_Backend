@@ -13,12 +13,13 @@ router.post("/create-account", kycController.createVendorAccount);
 router.get("/status", kycController.getKYCStatus);
 
 // KYC step routes (use temp token authentication)
-router.post("/personal-business", kycController.verifyTempToken, kycController.savePersonalBusinessStep);
-router.post("/documents", kycController.verifyTempToken, kycController.uploadDocuments, kycController.saveDocumentsStep);
-router.post("/remove-document", kycController.verifyTempToken, kycController.removeDocument);
-router.post("/remove-bank-document", kycController.verifyTempToken, kycController.removeBankDocument);
-router.post("/bank-details", kycController.verifyTempToken, kycController.saveBankDetailsStep);
-router.post("/submit", kycController.verifyTempToken, kycController.submitKYC);
+//kycController.verifyTempToken
+router.post("/personal-business",  kycController.savePersonalBusinessStep);
+router.post("/documents",  kycController.uploadDocuments, kycController.saveDocumentsStep);
+router.post("/remove-document", kycController.removeDocument);
+router.post("/remove-bank-document",  kycController.removeBankDocument);
+router.post("/bank-details",  kycController.saveBankDetailsStep);
+router.post("/submit", kycController.submitKYC);
 
 // Get KYC status moved to public routes above
 

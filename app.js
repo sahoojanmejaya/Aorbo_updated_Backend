@@ -1,4 +1,5 @@
 const express = require("express");
+
 const cors = require("cors");
 const morgan = require("morgan");
 const path = require("path");
@@ -6,6 +7,8 @@ const { sequelize } = require("./models");
 const { handleSequelizeErrors } = require("./middleware/validationMiddleware");
 const logger = require("./utils/logger");
 require("dotenv").config();
+
+
 
 // Set global timezone to Indian Standard Time (IST)
 process.env.TZ = 'Asia/Kolkata';
@@ -47,7 +50,12 @@ const adminRoutes = require("./routes/admin");
 const vendorPanelRoutes = require("./routes/vendor");
 
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
 
+// Serve index.html on root
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
 // CORS configuration
 const corsOptions = {
     origin: true, // Allow all origins temporarily

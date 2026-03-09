@@ -4,19 +4,36 @@ module.exports = (sequelize, DataTypes) => {
         {
             role_id: {
                 type: DataTypes.INTEGER,
-                primaryKey: true,
+                //primaryKey: true,
             },
-            permission_id: {
+
+             user_id: {
                 type: DataTypes.INTEGER,
-                primaryKey: true,
+               // primaryKey: true,
             },
+             pre_fix: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+
+         permission_id: {
+  type: DataTypes.STRING,
+  allowNull: false,
+ // defaultValue: [],
+ 
+}
+            
+
+            
         },
         {
             tableName: "role_permissions",
             underscored: true,
             timestamps: false,
-        }
+        },
+        
     );
 
+    
     return RolePermission;
 };

@@ -10,7 +10,7 @@ exports.getAllInclusions = async (req, res) => {
                 ["usage_count", "DESC"],
                 ["name", "ASC"]
             ],
-            limit: 10
+            limit: 1000
         });
 
         logger.vendor("info", "Retrieved all inclusions", {

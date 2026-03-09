@@ -140,5 +140,8 @@ module.exports = (sequelize, DataTypes) => {
         // The relationship is handled through the JSON field containing policy IDs
     };
 
+    // CancellationPolicy model
+
+
     return CancellationPolicy;
 };

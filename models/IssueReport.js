@@ -19,6 +19,37 @@ module.exports = (sequelize, DataTypes) => {
                 references: { model: "customers", key: "id" },
                 comment: "Customer who reported the issue",
             },
+             ticket_id: {
+                type: DataTypes.STRING,
+               
+            },
+            vendor_id:{
+                type: DataTypes.INTEGER,
+            },
+            teamlead_id:{
+            type: DataTypes.INTEGER,
+            },
+            Escalate_status:{
+               type: DataTypes.STRING,
+            },
+            Escalate_reason:{
+                type: DataTypes.TEXT,
+            },
+             source:{
+               type: DataTypes.STRING,
+            },
+             sla_progress:{
+               type: DataTypes.STRING,
+            },
+             ticket_status:{
+               type: DataTypes.STRING,
+            },
+             last_comment:{
+               type: DataTypes.TEXT,
+            },
+            reason:{
+               type: DataTypes.TEXT,
+            },
             name: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
@@ -39,11 +70,18 @@ module.exports = (sequelize, DataTypes) => {
                     "accommodation_issue",
                     "trek_services_issue", 
                     "transportation_issue",
-                    "other"
+                    "technical_issue",
+                    "accounts_issue",
+                    'Payment Failure (UPI/Netbanking)',
+                    'GST Invoice Mismatch',
+                    'Delivery Delay (Logistics)',
+                    'Portal Login Issue',
+                    'Technical Bug'
                 ),
                 allowNull: false,
                 comment: "Type of issue reported",
             },
+
             issue_category: {
                 type: DataTypes.ENUM(
                     "drunken_driving",
@@ -66,7 +104,9 @@ module.exports = (sequelize, DataTypes) => {
                     "open",
                     "in_progress",
                     "resolved",
-                    "closed"
+                    "closed",
+                    "active",
+                    "escalated"
                 ),
                 defaultValue: "pending",
                 comment: "Status of the issue report",
@@ -156,6 +196,20 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "assigned_to",
             as: "assignedUser",
         });
+         IssueReport.hasMany(models.TicketComment, {
+    foreignKey: "issue_id",
+    as: "comments",
+  });
+  IssueReport.belongsTo(models.User, {
+  foreignKey: "teamlead_id",
+  as: "teamlead"
+});
+IssueReport.hasMany(models.AssignTask, {
+  foreignKey: "issue_report_id",
+  as: "assignments"
+});
+
+
     };
 
     return IssueReport;

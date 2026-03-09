@@ -59,6 +59,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "traveler_id",
             as: "traveler",
         });
+
+         BookingTraveler.belongsTo(models.Customer, {
+    foreignKey: "traveler_id",
+    as: "customer", // 🔥 THIS IS REQUIRED
+  });
     };
 
     return BookingTraveler;

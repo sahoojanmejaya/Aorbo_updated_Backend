@@ -3,9 +3,16 @@ const logger = require("./utils/logger");
 const http = require("http");
 const { Server } = require("socket.io");
 const PORT = process.env.PORT || 5050;
-
+const express=require("express")
 // Setup global error handling
 logger.setupGlobalErrorHandling();
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
 
 // Log server startup
 logger.app("info", "Starting Arobo Backend Server", {
@@ -24,11 +31,13 @@ const io = new Server(server, {
         credentials: true
     }
 });
+app.set("io", io);
 
 // Initialize Socket.IO handlers
-const socketManager = require("./socket/socketManager");
-socketManager.initialize(io);
 
+const chatSocket = require("./socket/socketManager");
+chatSocket(io);
+//const socketManager = require("./");
 server.listen(PORT, async () => {
     logger.app("info", `Server started successfully on port ${PORT}`, {
         port: PORT,

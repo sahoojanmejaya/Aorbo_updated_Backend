@@ -19,16 +19,29 @@ const bannerItemRoutes = require("./bannerItemRoutes");
 const emergencyContactRoutes = require("./emergencyContactRoutes");
 const chatRoutes = require("./chatRoutes");
 const userRoutes = require("./userRoutes");
-
+const user_registerRoutes = require("./registrationRoutes");
+const roleRoutes = require("./roleRoutes");
+const permissionRoutes = require("./permissionRoutes");
+const supportRoutes = require("./supportRoutes");
+const assignTaskRoutes = require("./assignTaskRoutes");
+const unifiedSupportRoutes = require("./unifiedSupportRoutes");
+const reviewRoutes = require("./reviewRoutes");
+const trekRoutes = require("./trekRoutes");
 // Mount public routes (no auth required)
 router.use("/auth", authRoutes);
-
+router.use("/user_register", user_registerRoutes);
+router.use("/permission", permissionRoutes);
 // Temporarily bypass auth for disputes (for testing)
 router.use("/disputes", disputeRoutes);
-
+router.use("/support_dashboard", supportRoutes);
+router.use("/unified_support_dashboard", unifiedSupportRoutes);
+router.use("/role", roleRoutes);
+router.use("/assign_task", assignTaskRoutes);
+router.use("/chats", chatRoutes);
 // Mount banner-items with custom middleware order (multer before auth)
 router.use("/banner-items", bannerItemRoutes);
-
+router.use("/reviews", reviewRoutes);
+router.use("/admin_trek", trekRoutes);
 // Apply auth middleware to protected admin routes
 router.use(authMiddleware);
 
@@ -44,8 +57,9 @@ router.use("/cancellation-bookings", cancellationBookingRoutes);
 router.use("/cancellation-policy-settings", cancellationPolicySettingsRoutes);
 router.use("/banner-types", bannerTypeRoutes);
 router.use("/emergency-contacts", emergencyContactRoutes);
-router.use("/chats", chatRoutes);
+
 router.use("/users", userRoutes);
+
 // banner-items is handled separately with custom middleware order
 
 // Admin API info

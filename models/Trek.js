@@ -74,6 +74,20 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: true,
             },
+
+            // add new fields 
+
+             approved_at: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+
+             approved_by: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+
+
             duration_days: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
@@ -150,6 +164,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.ENUM("active", "deactive"),
                 defaultValue: "deactive",
             },
+
+            trek_status: {
+  type: DataTypes.STRING,
+  defaultValue: "pending",
+},
+ rejected_reason: {
+  type: DataTypes.TEXT,
+
+},
+
             discount_value: {
                 type: DataTypes.DECIMAL(10, 2),
                 allowNull: true,
@@ -303,7 +327,10 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "badge_id",
             as: "badge",
         });
+        
     };
+    
 
     return Trek;
 };
+

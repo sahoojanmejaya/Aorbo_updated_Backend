@@ -5,7 +5,7 @@ const fs = require('fs');
 class EmailNotificationService {
     constructor() {
         // SMTP configuration using provided details
-        this.transporter = nodemailer.createTransport({
+       /* this.transporter = nodemailer.createTransport({
             host: 'smtp-relay.brevo.com',
             port: 587,
             secure: false, // true for 465, false for other ports
@@ -16,17 +16,28 @@ class EmailNotificationService {
             tls: {
                 rejectUnauthorized: false
             }
+        });*/
+
+         // ✅ ZOHO SMTP CONFIG (ENV BASED)
+        this.transporter = nodemailer.createTransport({
+            host: 'smtp.zoho.in',
+            port: 465,
+            secure: true, // ✅ SSL for Zoho (465)
+            auth: {
+                user: 'contact@aorbotreks.com',
+                pass: '5F45z0NzRBzD',
+            },
         });
 
         // Email configuration
         this.config = {
-            from: '"Arobo Backend System" <chintan.eclipso@gmail.com>',
+            from: '"Arobo Backend System" <contact@aorbotreks.com>',
             // Add recipient emails for different error types
             recipients: {
-                critical: process.env.CRITICAL_ERROR_EMAIL || 'eclipsotech@gmail.com',
-                high: process.env.HIGH_ERROR_EMAIL || 'eclipsotech@gmail.com',
-                medium: process.env.MEDIUM_ERROR_EMAIL || 'eclipsotech@gmail.com',
-                general: process.env.GENERAL_ERROR_EMAIL || 'eclipsotech@gmail.com',
+                critical: process.env.CRITICAL_ERROR_EMAIL || 'contact@aorbotreks.com',
+                high: process.env.HIGH_ERROR_EMAIL || 'contact@aorbotreks.com',
+                medium: process.env.MEDIUM_ERROR_EMAIL || 'contact@aorbotreks.com',
+                general: process.env.GENERAL_ERROR_EMAIL || 'contact@aorbotreks.com',
             },
             // Rate limiting to prevent email spam
             rateLimits: {

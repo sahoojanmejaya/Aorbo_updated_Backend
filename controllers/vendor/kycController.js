@@ -55,14 +55,16 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024, // 5MB limit
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|pdf/;
+        //JPEG, JPG, PNG and WebP
+ 
+        const allowedTypes = /jpeg|jpg|png|webp|pdf/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
         
         if (mimetype && extname) {
             return cb(null, true);
         } else {
-            cb(new Error("Only images (JPEG, PNG) and PDF files are allowed"));
+            cb(new Error("Only images (JPEG, PNG,WEBP) and PDF files are allowed"));
         }
     }
 });
@@ -78,7 +80,8 @@ const uploadDocuments = (req, res, next) => {
     upload.fields([
         { name: 'panCard', maxCount: 1 },
         { name: 'idProof', maxCount: 1 },
-        { name: 'cancelledCheque', maxCount: 1 },
+        { name: 'buisness_logo', maxCount: 1 },
+         { name: 'cancelledCheque', maxCount: 1 },
         { name: 'gstinCertificate', maxCount: 1 },
         { name: 'msmeCertificate', maxCount: 1 },
         { name: 'shopEstablishment', maxCount: 1 },
@@ -128,10 +131,12 @@ const generatePassword = (fullName) => {
 // Step 1: Personal & Business Details
 exports.savePersonalBusinessStep = async (req, res) => {
     let personal, business; // Declare outside try block for catch access
-    try {
-        ({ personal, business } = req.body);
+   // try {
+        ({ personal, business,bankData } = req.body);
+
+        console.log("bankDatabankDatabankData_______________________________________________________",bankData);
         
-        console.log("KYC Step 1 - Received data:", { personal, business });
+        console.log("KYC Step 1 - Received data:", { personal, business,bankData });
         console.log("Phone number:", personal.mobile);
         
         // Normalize phone number (remove spaces, country code, etc.)
@@ -186,8 +191,24 @@ exports.savePersonalBusinessStep = async (req, res) => {
                 business_type: business.businessType,
                 business_entity: business.businessEntity,
                 business_address: business.businessAddress,
+                city: personal.city,
+                state: personal.state,
+                pincode: personal.pincode,
+
+             account_holder_name: bankData.accountHolderName,
+             bank_name: bankData.bankName,
+             ifsc_code: bankData.ifscCode,
+             account_number: bankData.accountNumber,
+           //  kyc_step: 4,
+             kyc_status: 'in_progress',
+
+               // adhar_no: personal.adhar_no,
+               // pan_no: personal.pan_no,
+              //  dob: personal.dob,
+              //  gender: personal.gender,
+
                 gstin: business.gstin,
-                kyc_status: "in_progress",
+              //  kyc_status: "in_progress",
                 kyc_step: 2,
             });
 
@@ -228,11 +249,26 @@ exports.savePersonalBusinessStep = async (req, res) => {
             const vendor = await Vendor.create({
                 user_id: tempUser.id,
                 address: personal.address,
+                city: personal.city,
+                state: personal.state,
+                pincode: personal.pincode,
                 business_name: business.businessName,
                 business_type: business.businessType,
                 business_entity: business.businessEntity,
                 business_address: business.businessAddress,
                 gstin: business.gstin,
+
+             account_holder_name: bankData.accountHolderName,
+             bank_name: bankData.bankName,
+             ifsc_code: bankData.ifscCode,
+             account_number: bankData.accountNumber,
+            // kyc_step: 4,
+         //    kyc_status: 'in_progress',
+
+              //  adhar_no: personal.adhar_no,
+               // pan_no: personal.pan_no,
+                //dob: personal.dob,
+                //gender: personal.gender,
                 kyc_status: "in_progress",
                 kyc_step: 2,
             });
@@ -251,7 +287,7 @@ exports.savePersonalBusinessStep = async (req, res) => {
                 vendor_id: vendor.id,
             });
         }
-    } catch (error) {
+    /*} catch (error) {
         console.error("Detailed error in savePersonalBusinessStep:", error);
         logger.api("error", "Error saving personal & business details", {
             error: error.message,
@@ -262,18 +298,18 @@ exports.savePersonalBusinessStep = async (req, res) => {
         });
         res.status(500).json({ 
             success: false, 
-            message: "Failed to save personal & business details",
+            message: "Some thing went wrong",
             error: process.env.NODE_ENV === "development" ? error.message : undefined
         });
-    }
+    }*/
 };
 
 // Step 2: Document Uploads
 exports.saveDocumentsStep = async (req, res) => {
     let documents = {}; // Declare outside try block for catch access
     try {
-        console.log("KYC Step 2 - Document uploads received");
-        console.log("Request headers:", req.headers);
+        console.log("KYC Step 2 - Document uploads received___________________________________");
+        console.log("Request headers____________________________________:", req.headers);
         console.log("Request body type:", typeof req.body);
         console.log("Request files:", req.files);
 
@@ -303,11 +339,15 @@ exports.saveDocumentsStep = async (req, res) => {
             // Map field names to column names
             const documentFieldMapping = {
                 'panCard': 'pan_card_path',
+                'buisness_logo':'business_logo',
                 'idProof': 'id_proof_path',
                 'cancelledCheque': 'cancelled_cheque_path',
                 'gstinCertificate': 'gstin_certificate_path',
                 'msmeCertificate': 'msme_certificate_path',
-                'shopEstablishment': 'shop_establishment_path'
+                'shopEstablishment': 'shop_establishment_path',
+                'businessLicense':'business_license_path',
+                'insurancePolicy':'insurance_policy_path',
+                'experienceCertificate':'experience_certificate_path',
             };
             
             // Process each uploaded file
@@ -446,11 +486,16 @@ exports.saveDocumentsStep = async (req, res) => {
                                 kyc_step: updatedVendor.kyc_step,
                                 kyc_status: updatedVendor.kyc_status,
                                 pan_card_path: updatedVendor.pan_card_path,
+                                business_logo: updatedVendor.business_logo,
                                 id_proof_path: updatedVendor.id_proof_path,
                                 cancelled_cheque_path: updatedVendor.cancelled_cheque_path,
                                 gstin_certificate_path: updatedVendor.gstin_certificate_path,
                                 msme_certificate_path: updatedVendor.msme_certificate_path,
-                                shop_establishment_path: updatedVendor.shop_establishment_path
+                                shop_establishment_path: updatedVendor.shop_establishment_path,
+                                //new added
+                                businessLicense:updatedVendor.business_license_path,
+                                insurancePolicy:updatedVendor.insurance_policy_path,
+                                experienceCertificate:updatedVendor.experience_certificate_path,
                             });
                         } catch (updateError) {
                             retryCount++;
@@ -543,6 +588,7 @@ exports.removeDocument = async (req, res) => {
         // Map field names to column names
         const documentFieldMapping = {
             'panCard': 'pan_card_path',
+            'buisness_logo':'business_logo',
             'idProof': 'id_proof_path',
             'cancelledCheque': 'cancelled_cheque_path',
             'gstinCertificate': 'gstin_certificate_path',
@@ -789,6 +835,14 @@ exports.getKYCStatus = async (req, res) => {
                         path: latestVendor.pan_card_path,
                         verified: latestVendor.pan_card_verified
                     } : null,
+
+buisness_logo: latestVendor.business_logo ? {
+                        path: latestVendor.business_logo,
+                        verified: latestVendor.business_logo
+                    } :null,
+
+
+                   
                     idProof: latestVendor.id_proof_path ? {
                         path: latestVendor.id_proof_path,
                         verified: latestVendor.id_proof_verified

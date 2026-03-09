@@ -248,7 +248,9 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "booking_id",
             as: "cancellationBooking",
         });
+       // Booking.belongsTo(models.Vendor, { foreignKey: "vendor_id", as: "vendor" });
     };
+
 
     return Booking;
 };

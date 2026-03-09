@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
             description: {
                 type: DataTypes.STRING,
             },
+            prefix: {
+                type: DataTypes.JSON,
+            },
         },
         {
             tableName: "roles",

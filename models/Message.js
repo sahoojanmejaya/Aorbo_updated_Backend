@@ -7,26 +7,23 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            chat_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "chats",
-                    key: "id",
-                },
-            },
+          
             sender_type: {
                 type: DataTypes.ENUM("admin", "customer"),
-                allowNull: false,
+            
             },
             sender_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 comment: "ID of admin user or customer",
             },
+            
+       receiver_id: {
+        type: DataTypes.INTEGER,
+       },
             message: {
                 type: DataTypes.TEXT,
-                allowNull: false,
+                
             },
             message_type: {
                 type: DataTypes.ENUM("text", "image", "file"),
@@ -44,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 allowNull: true,
             },
+            file_url: {
+                type: DataTypes.STRING,
+               
+            },
         },
         {
             tableName: "messages",
@@ -52,10 +53,10 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     Message.associate = (models) => {
-        Message.belongsTo(models.Chat, {
-            foreignKey: "chat_id",
-            as: "chat",
-        });
+      //  Message.belongsTo(models.Chat, {
+         //  foreignKey: "chat_id",
+         //   as: "chat",
+        //});
     };
 
     return Message;
