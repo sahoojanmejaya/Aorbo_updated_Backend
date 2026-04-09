@@ -1,99 +1,128 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const { uploadToCloudinary, deleteFromCloudinary } = require('./cloudinary');
 
+/**
+ * Creates a multer middleware that stores files in memory and uploads to Cloudinary.
+ * @param {object} options
+ * @param {string[]} options.allowedExtensions - e.g. ['.jpg', '.pdf']
+ * @param {number}  options.maxFileSize - bytes, default 10MB
+ * @param {number}  options.maxFileCount - default 1
+ * @param {string}  options.folder - Cloudinary folder, default 'aorbo/uploads'
+ * @param {string}  options.resourceType - 'image' | 'raw' | 'auto', default 'auto'
+ */
 const createMulterConfig = ({
-  allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg',
-
-  // Documents
-  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
-  '.txt', '.rtf', '.odt',
-
-  // Audio (ALL major formats)
-  '.mp3', '.wav', '.aac', '.m4a', '.flac', '.alac', 
-  '.ogg', '.oga', '.opus', '.wma', '.aiff', '.amr',
-
-  // Video (ALL major formats)
-  '.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv',
-  '.webm', '.mpeg', '.mpg', '.3gp', '.m4v', '.ts',
-
-  // Screen recordings / raw recordings
-  '.rec', '.m3u8', '.mts', '.rm', '.rmvb',
-
-  // Map / GIS files    
-  '.kml', '.kmz', '.gpx', '.geojson','.json',
-
-  // Compressed uploads (optional but common)
-  '.zip', '.rar', '.7z', '.tar', '.gz'],
-  maxFileSize = 10 * 1024 * 1024, // 10 MB
+  allowedExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg',
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.txt', '.rtf', '.odt',
+    '.mp3', '.wav', '.aac', '.m4a', '.flac', '.alac',
+    '.ogg', '.oga', '.opus', '.wma', '.aiff', '.amr',
+    '.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv',
+    '.webm', '.mpeg', '.mpg', '.3gp', '.m4v', '.ts',
+    '.rec', '.m3u8', '.mts', '.rm', '.rmvb',
+    '.kml', '.kmz', '.gpx', '.geojson', '.json',
+    '.zip', '.rar', '.7z', '.tar', '.gz',
+  ],
+  maxFileSize = 10 * 1024 * 1024,
   maxFileCount = 1,
-  uploadPath = '/'
+  folder = 'aorbo/uploads',
+  resourceType = 'auto',
 } = {}) => {
-  // Define storage configuration
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, `public${uploadPath}`);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const ext = path.extname(file.originalname);
-      if (!allowedExtensions.includes(ext)) {
-        return cb(new Error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`), false);
-      }
-      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-    }
-  });
-
-  // Define file filter and limits
   const fileFilter = (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     if (allowedExtensions.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`), false);
+      cb(new Error(`Invalid file type. Allowed: ${allowedExtensions.join(', ')}`), false);
     }
   };
 
-  const limits = {
-    fileSize: maxFileSize,
-    files: maxFileCount
-  };
-
-  return multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: limits
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter,
+    limits: { fileSize: maxFileSize, files: maxFileCount },
   });
-};
 
-// Function to delete a file
-const deleteFile = (filePath, callback) => {
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, 'File deleted successfully');
-  });
-};
+  // Return a wrapper that runs multer then uploads to Cloudinary
+  const middleware = (fieldConfig) => (req, res, next) => {
+    const multerHandler =
+      typeof fieldConfig === 'string'
+        ? upload.single(fieldConfig)
+        : Array.isArray(fieldConfig)
+        ? upload.array(fieldConfig[0], fieldConfig[1] || maxFileCount)
+        : upload.fields(fieldConfig);
 
-// Function to delete multiple files
-const deleteMultipleFiles = (filePaths, callback) => {
-  const unlinkFile = (filePath) => {
-    return new Promise((resolve, reject) => {
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(`File ${filePath} deleted successfully`);
+    multerHandler(req, res, async (err) => {
+      if (err) return res.status(400).json({ success: false, message: err.message });
+
+      try {
+        // Upload single file
+        if (req.file) {
+          const result = await uploadToCloudinary(req.file.buffer, {
+            folder,
+            resource_type: resourceType,
+          });
+          req.file.path = result.secure_url;
+          req.file.public_id = result.public_id;
         }
-      });
+        // Upload array of files
+        if (req.files && Array.isArray(req.files)) {
+          await Promise.all(req.files.map(async (file) => {
+            const result = await uploadToCloudinary(file.buffer, {
+              folder,
+              resource_type: resourceType,
+            });
+            file.path = result.secure_url;
+            file.public_id = result.public_id;
+          }));
+        }
+        // Upload fields object
+        if (req.files && !Array.isArray(req.files)) {
+          await Promise.all(Object.keys(req.files).map(async (fieldName) => {
+            await Promise.all(req.files[fieldName].map(async (file) => {
+              const result = await uploadToCloudinary(file.buffer, {
+                folder,
+                resource_type: resourceType,
+              });
+              file.path = result.secure_url;
+              file.public_id = result.public_id;
+            }));
+          }));
+        }
+        next();
+      } catch (uploadError) {
+        console.error('Cloudinary upload error:', uploadError);
+        return res.status(500).json({ success: false, message: 'File upload failed' });
+      }
     });
   };
 
-  // Use Promise.all to delete all files
-  Promise.all(filePaths.map(unlinkFile))
-    .then((results) => callback(null, results))
-    .catch((error) => callback(error));
+  return middleware;
 };
 
-module.exports = { createMulterConfig, deleteFile, deleteMultipleFiles };   
+// Delete a file from Cloudinary by public_id or URL
+const deleteFile = async (publicIdOrUrl, resourceType = 'image', callback) => {
+  try {
+    let publicId = publicIdOrUrl;
+    if (typeof publicIdOrUrl === 'string' && publicIdOrUrl.startsWith('http')) {
+      const match = publicIdOrUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+      if (match) publicId = match[1];
+    }
+    await deleteFromCloudinary(publicId, resourceType);
+    if (callback) callback(null, 'File deleted successfully');
+  } catch (err) {
+    if (callback) callback(err);
+  }
+};
+
+const deleteMultipleFiles = async (publicIds, callback) => {
+  try {
+    await Promise.all(publicIds.map((id) => deleteFromCloudinary(id)));
+    if (callback) callback(null, 'Files deleted successfully');
+  } catch (err) {
+    if (callback) callback(err);
+  }
+};
+
+module.exports = { createMulterConfig, deleteFile, deleteMultipleFiles };

@@ -1149,6 +1149,30 @@ exports.createTrek = async (req, res) => {
 
         await transaction.commit();
 
+        // Notify admins about new trek pending approval (fire-and-forget)
+        try {
+            const { User } = require("../../models");
+            const notificationService = require("../../services/notificationService");
+            const adminUsers = await User.findAll({
+                where: { status: "active" },
+                attributes: ["id"],
+            });
+            const adminIds = adminUsers.map((u) => u.id);
+            if (adminIds.length > 0) {
+                notificationService.send(
+                    "trek_submitted",
+                    adminIds,
+                    {
+                        trek_id: trek.id,
+                        trek_title: trek.title,
+                        vendor_id: vendorId,
+                        message: `New trek "${trek.title}" submitted for approval`,
+                    },
+                    "high"
+                ).catch(() => {}); // non-blocking
+            }
+        } catch (_) {}
+
         const duration = Date.now() - startTime;
         logger.trek("info", "Trek created successfully with all related data", {
             requestId,
@@ -3022,7 +3046,15 @@ exports.toggleTrekStatus = async (req, res) => {
             });
         }
 
-        const newStatus = trek.status === "active" ? "inactive" : "active";
+        // Vendors can only activate treks that have been approved by admin
+        if (trek.status !== "active" && trek.trek_status !== "approved") {
+            return res.status(403).json({
+                success: false,
+                message: "Trek cannot be activated until it has been approved by an admin.",
+            });
+        }
+
+        const newStatus = trek.status === "active" ? "deactive" : "active";
         await trek.update({ status: newStatus });
 
         res.json({

@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const settlementService = require('../services/settlementService');
 const logger = require('../utils/logger');
 const platformConfig = require('../config/platformConfig');
+const { Op } = require('sequelize');
 
 /**
  * Settlement Cron Job
@@ -96,6 +97,64 @@ class SettlementCron {
 }
 
 module.exports = new SettlementCron();
+
+// Mark batches as completed when their end_date has passed — runs at 23:45 IST
+// Must run before the midnight settlement cron so status = 'completed' rows exist
+cron.schedule('45 23 * * *', async () => {
+    try {
+        logger.info('cron', 'Starting batch completion sweep');
+        const { Batch } = require('../models');
+        const { Op } = require('sequelize');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const [count] = await Batch.update(
+            { status: 'completed' },
+            {
+                where: {
+                    end_date: { [Op.lt]: today },
+                    status: 'active',
+                },
+            }
+        );
+
+        logger.info('cron', `Batch completion sweep done: ${count} batches marked completed`);
+        console.log(`✅ Batch completion sweep: ${count} batches marked completed`);
+    } catch (error) {
+        logger.error('cron', 'Batch completion sweep failed', { error: error.message });
+        console.error('❌ Batch completion sweep failed:', error.message);
+    }
+}, { timezone: platformConfig.TIMEZONE });
+
+// Daily inventory reconciliation - runs at 2 AM IST
+cron.schedule("0 2 * * *", async () => {
+    try {
+        logger.info("cron", "Starting daily inventory reconciliation...");
+        const { Batch } = require("../models");
+        const { recalculateBatchSlots } = require("../utils/batchSlotManager");
+
+        const activeBatches = await Batch.findAll({
+            where: {
+                status: { [Op.in]: ["active", "upcoming"] }
+            },
+            attributes: ["id"]
+        });
+
+        let fixed = 0;
+        for (const batch of activeBatches) {
+            try {
+                await recalculateBatchSlots(batch.id);
+                fixed++;
+            } catch (err) {
+                logger.error("cron", `Failed to recalculate slots for batch ${batch.id}:`, err.message);
+            }
+        }
+
+        logger.info("cron", `Inventory reconciliation complete. Fixed ${fixed}/${activeBatches.length} batches.`);
+    } catch (error) {
+        logger.error("cron", "Error in inventory reconciliation cron:", error);
+    }
+}, { timezone: "Asia/Kolkata" });
 
 
 

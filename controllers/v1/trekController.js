@@ -58,21 +58,32 @@ exports.getAllTreks = async (req, res) => {
         const { page = 1, limit = 10, destination_id, city_id, min_price, max_price, duration_days, start_date } = req.query;
         const offset = (page - 1) * limit;
 
-        const whereClause = { status: "active" };
+        // ✅ ADMIN CONTROL: Only show approved treks
+        const whereClause = {
+            status: "active",
+            trek_status: "approved",
+            approval_status: "approved",  // Admin approved only
+            visibility: true              // Admin enabled visibility
+        };
 
         if (destination_id) {
             whereClause.destination_id = destination_id;
         }
 
         if (city_id) {
-            // MariaDB-compatible: city_ids is a JSON array of numbers
-            // Use 3-arg JSON_CONTAINS(doc, val, path) and pass a numeric literal
+            // MariaDB-compatible: city_ids may be stored as integers [1,2] or strings ["1","2"]
+            // Match both forms so the query works regardless of how the column was populated
             const numericCityId = parseInt(city_id);
-            whereClause[Op.and] = [
-                ...(whereClause[Op.and] || []),
-                sequelize.literal(`JSON_CONTAINS(city_ids, ${Number.isNaN(numericCityId) ? 0 : numericCityId}, '$')`)
-            ];
-            delete whereClause.city_ids; // Remove the direct city_ids condition
+            if (!Number.isNaN(numericCityId)) {
+                // Ensure Op.and exists or create it
+                whereClause[Op.and] = whereClause[Op.and] || [];
+                whereClause[Op.and].push(
+                    sequelize.literal(
+                        `(JSON_CONTAINS(city_ids, ${numericCityId}, '$') OR JSON_CONTAINS(city_ids, '"${numericCityId}"', '$') OR city_ids LIKE '%"${numericCityId}"%' OR city_ids LIKE '%${numericCityId}%')`
+                    )
+                );
+            }
+            delete whereClause.city_id; // Ensure we don't have a double filter
         }
 
         if (min_price || max_price) {
@@ -204,10 +215,25 @@ exports.getAllTreks = async (req, res) => {
             let boardingDateTime = null;
 
             if (trekData.batches && trekData.batches.length > 0) {
-                const batch = trekData.batches[0];
+                // Sort ascending by start_date
+                const sortedBatches = [...trekData.batches].sort(
+                    (a, b) => new Date(a.start_date) - new Date(b.start_date)
+                );
+
+                // If a start_date was searched, prefer the batch that falls on that exact date.
+                // Fall back to the earliest batch if none matches exactly.
+                let batch = sortedBatches[0];
+                if (start_date) {
+                    const searchDateStr = new Date(start_date).toISOString().split('T')[0];
+                    const exactMatch = sortedBatches.find(b =>
+                        new Date(b.start_date).toISOString().split('T')[0] === searchDateStr
+                    );
+                    if (exactMatch) batch = exactMatch;
+                }
                 batchInfo = {
                     id: batch.id,
-                    startDate: batch.start_date,
+                    // Return as YYYY-MM-DD so Flutter can compare dates without time mismatch
+                    startDate: new Date(batch.start_date).toISOString().split('T')[0],
                     availableSlots: batch.available_slots
                 };
 
@@ -246,11 +272,11 @@ exports.getAllTreks = async (req, res) => {
                 }
             }
 
-            // Mark trek for filtering based on:
-            // 1. If boarding date/time was found but is less than 6 hours away
-            // 2. If start_date was provided but no matching boarding stage was found (filter it out)
-            const shouldFilter = (boardingDateTime && boardingDateTime < minimumBoardingTime) ||
-                                 (start_date && city_id && !boardingDateTime);
+            // Only filter if a boarding stage was found AND it's within the 6-hour cutoff AND not searching a future date.
+            // If no stage was found for this city, the trek still passed the DB-level city_ids
+            // filter so we leave it visible — don't silently drop it.
+            const isFutureSearch = start_date && new Date(start_date) > new Date();
+            const shouldFilter = !isFutureSearch && boardingDateTime && boardingDateTime < minimumBoardingTime;
 
             // Calculate average rating from ratings array
             let averageRating = 0.0;
@@ -327,8 +353,14 @@ exports.getTrekById = async (req, res) => {
         const { id } = req.params;
         console.log("Looking for trek with id:", id);
         
+        // ✅ ADMIN CONTROL: Only show approved treks
         const trek = await Trek.findOne({
-            where: { id },
+            where: {
+                id,
+                trek_status: "approved",
+                approval_status: "approved",  // Admin approved only
+                visibility: true              // Admin enabled visibility
+            },
             include: [
                 {
                     model: Vendor,
@@ -716,9 +748,9 @@ exports.getTrekBatches = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Verify trek exists and is active
+        // Verify trek exists, is active, and has been approved
         const trek = await Trek.findOne({
-            where: { id: id, status: "active" },
+            where: { id: id, status: "active", trek_status: "approved" },
         });
 
         if (!trek) {

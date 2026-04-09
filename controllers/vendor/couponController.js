@@ -7,7 +7,7 @@ const CouponAuditService = require("../../services/couponAuditService");
 const getCouponsByTrek = async (req, res) => {
     try {
         const trekId = req.params.trekId;
-        
+
         if (!trekId) {
             return res.status(400).json({
                 success: false,
@@ -15,7 +15,7 @@ const getCouponsByTrek = async (req, res) => {
                 message: "Please provide trek ID as URL parameter"
             });
         }
-        
+
         console.log('Fetching coupons for trek ID:', trekId);
 
         const coupons = await Coupon.findAll({
@@ -57,90 +57,90 @@ const getCouponsByTrek = async (req, res) => {
         const serializedCoupons = coupons.map(coupon => {
             try {
                 const couponData = coupon.toJSON();
-                
+
                 return {
-                // Basic coupon information
-                id: couponData.id,
-                title: couponData.title,
-                code: couponData.code,
-                description: couponData.description,
-                color: couponData.color,
-                
-                // Discount details
-                discount_type: couponData.discount_type,
-                discount_value: couponData.discount_value,
-                min_amount: couponData.min_amount,
-                max_discount_amount: couponData.max_discount_amount,
-                
-                // Usage limits
-                max_uses: couponData.max_uses,
-                current_uses: couponData.current_uses,
-                
-                // Validity period
-                valid_from: couponData.valid_from ? couponData.valid_from.toISOString() : null,
-                valid_until: couponData.valid_until ? couponData.valid_until.toISOString() : null,
-                
-                // Status information
-                status: couponData.status,
-                approval_status: couponData.approval_status,
-                admin_notes: couponData.admin_notes,
-                
-                // Terms and conditions (parse JSON if it's a string)
-                terms_and_conditions: (() => {
-                    try {
-                        if (!couponData.terms_and_conditions) return [];
-                        if (typeof couponData.terms_and_conditions === 'string') {
-                            return JSON.parse(couponData.terms_and_conditions);
+                    // Basic coupon information
+                    id: couponData.id,
+                    title: couponData.title,
+                    code: couponData.code,
+                    description: couponData.description,
+                    color: couponData.color,
+
+                    // Discount details
+                    discount_type: couponData.discount_type,
+                    discount_value: couponData.discount_value,
+                    min_amount: couponData.min_amount,
+                    max_discount_amount: couponData.max_discount_amount,
+
+                    // Usage limits
+                    max_uses: couponData.max_uses,
+                    current_uses: couponData.current_uses,
+
+                    // Validity period
+                    valid_from: couponData.valid_from ? couponData.valid_from.toISOString() : null,
+                    valid_until: couponData.valid_until ? couponData.valid_until.toISOString() : null,
+
+                    // Status information
+                    status: couponData.status,
+                    approval_status: couponData.approval_status,
+                    admin_notes: couponData.admin_notes,
+
+                    // Terms and conditions (parse JSON if it's a string)
+                    terms_and_conditions: (() => {
+                        try {
+                            if (!couponData.terms_and_conditions) return [];
+                            if (typeof couponData.terms_and_conditions === 'string') {
+                                return JSON.parse(couponData.terms_and_conditions);
+                            }
+                            return couponData.terms_and_conditions;
+                        } catch (error) {
+                            console.error('Error parsing terms_and_conditions JSON:', error);
+                            console.error('Invalid JSON data:', couponData.terms_and_conditions);
+                            // Return the raw string as a single item array if JSON parsing fails
+                            return [couponData.terms_and_conditions];
                         }
-                        return couponData.terms_and_conditions;
-                    } catch (error) {
-                        console.error('Error parsing terms_and_conditions JSON:', error);
-                        console.error('Invalid JSON data:', couponData.terms_and_conditions);
-                        // Return the raw string as a single item array if JSON parsing fails
-                        return [couponData.terms_and_conditions];
-                    }
-                })(),
-                
-                // Vendor information
-                vendor_id: couponData.vendor_id,
-                vendor: couponData.vendor ? {
-                    id: couponData.vendor.id,
-                    company_info: couponData.vendor.company_info,
-                    status: couponData.vendor.status,
-                    user: couponData.vendor.user ? {
-                        id: couponData.vendor.user.id,
-                        name: couponData.vendor.user.name,
-                        email: couponData.vendor.user.email,
-                        phone: couponData.vendor.user.phone
-                    } : null
-                } : null,
-                
-                // Assigned trek information
-                assigned_trek_id: couponData.assigned_trek_id,
-                assigned_trek_name: couponData.assignedTrek ? couponData.assignedTrek.title : null,
-                assignedTrek: couponData.assignedTrek ? {
-                    id: couponData.assignedTrek.id,
-                    title: couponData.assignedTrek.title,
-                    destination_id: couponData.assignedTrek.destination_id
-                } : null,
-                
-                // Timestamps
-                created_at: couponData.created_at ? couponData.created_at.toISOString() : null,
-                updated_at: couponData.updated_at ? couponData.updated_at.toISOString() : null,
-                
-                // Additional computed fields
-                // Check if expired: valid_until should be valid for the entire day (end of day)
-                is_expired: (() => {
-                    if (!couponData.valid_until) return false;
-                    const validUntil = new Date(couponData.valid_until);
-                    const now = new Date();
-                    // Set valid_until to end of day (23:59:59.999) for comparison
-                    validUntil.setHours(23, 59, 59, 999);
-                    return validUntil < now;
-                })(),
-                is_active: couponData.status === 'active' && couponData.approval_status === 'approved',
-                usage_percentage: couponData.max_uses ? (couponData.current_uses / couponData.max_uses) * 100 : 0,
-                remaining_uses: couponData.max_uses ? couponData.max_uses - couponData.current_uses : null
+                    })(),
+
+                    // Vendor information
+                    vendor_id: couponData.vendor_id,
+                    vendor: couponData.vendor ? {
+                        id: couponData.vendor.id,
+                        company_info: couponData.vendor.company_info,
+                        status: couponData.vendor.status,
+                        user: couponData.vendor.user ? {
+                            id: couponData.vendor.user.id,
+                            name: couponData.vendor.user.name,
+                            email: couponData.vendor.user.email,
+                            phone: couponData.vendor.user.phone
+                        } : null
+                    } : null,
+
+                    // Assigned trek information
+                    assigned_trek_id: couponData.assigned_trek_id,
+                    assigned_trek_name: couponData.assignedTrek ? couponData.assignedTrek.title : null,
+                    assignedTrek: couponData.assignedTrek ? {
+                        id: couponData.assignedTrek.id,
+                        title: couponData.assignedTrek.title,
+                        destination_id: couponData.assignedTrek.destination_id
+                    } : null,
+
+                    // Timestamps
+                    created_at: couponData.created_at ? couponData.created_at.toISOString() : null,
+                    updated_at: couponData.updated_at ? couponData.updated_at.toISOString() : null,
+
+                    // Additional computed fields
+                    // Check if expired: valid_until should be valid for the entire day (end of day)
+                    is_expired: (() => {
+                        if (!couponData.valid_until) return false;
+                        const validUntil = new Date(couponData.valid_until);
+                        const now = new Date();
+                        // Set valid_until to end of day (23:59:59.999) for comparison
+                        validUntil.setHours(23, 59, 59, 999);
+                        return validUntil < now;
+                    })(),
+                    is_active: couponData.status === 'active' && couponData.approval_status === 'approved',
+                    usage_percentage: couponData.max_uses ? (couponData.current_uses / couponData.max_uses) * 100 : 0,
+                    remaining_uses: couponData.max_uses ? couponData.max_uses - couponData.current_uses : null
                 };
             } catch (error) {
                 console.error('Error serializing coupon:', error);
@@ -185,10 +185,10 @@ const getCouponsByTrek = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching coupons by trek:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: "Failed to fetch coupons",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -198,7 +198,7 @@ const getVendorCoupons = async (req, res) => {
     try {
         // Get vendor ID from URL parameter or from authenticated user
         const vendorId = req.params.vendorId || req.user?.id;
-        
+
         if (!vendorId) {
             return res.status(400).json({
                 success: false,
@@ -206,7 +206,7 @@ const getVendorCoupons = async (req, res) => {
                 message: "Please provide vendor ID as URL parameter or ensure user is authenticated"
             });
         }
-        
+
         console.log('Fetching coupons for vendor ID:', vendorId);
 
         const coupons = await Coupon.findAll({
@@ -240,90 +240,90 @@ const getVendorCoupons = async (req, res) => {
         const serializedCoupons = coupons.map(coupon => {
             try {
                 const couponData = coupon.toJSON();
-                
+
                 return {
-                // Basic coupon information
-                id: couponData.id,
-                title: couponData.title,
-                code: couponData.code,
-                description: couponData.description,
-                color: couponData.color,
-                
-                // Discount details
-                discount_type: couponData.discount_type,
-                discount_value: couponData.discount_value,
-                min_amount: couponData.min_amount,
-                max_discount_amount: couponData.max_discount_amount,
-                
-                // Usage limits
-                max_uses: couponData.max_uses,
-                current_uses: couponData.current_uses,
-                
-                // Validity period
-                valid_from: couponData.valid_from ? couponData.valid_from.toISOString() : null,
-                valid_until: couponData.valid_until ? couponData.valid_until.toISOString() : null,
-                
-                // Status information
-                status: couponData.status,
-                approval_status: couponData.approval_status,
-                admin_notes: couponData.admin_notes,
-                
-                // Terms and conditions (parse JSON if it's a string)
-                terms_and_conditions: (() => {
-                    try {
-                        if (!couponData.terms_and_conditions) return [];
-                        if (typeof couponData.terms_and_conditions === 'string') {
-                            return JSON.parse(couponData.terms_and_conditions);
+                    // Basic coupon information
+                    id: couponData.id,
+                    title: couponData.title,
+                    code: couponData.code,
+                    description: couponData.description,
+                    color: couponData.color,
+
+                    // Discount details
+                    discount_type: couponData.discount_type,
+                    discount_value: couponData.discount_value,
+                    min_amount: couponData.min_amount,
+                    max_discount_amount: couponData.max_discount_amount,
+
+                    // Usage limits
+                    max_uses: couponData.max_uses,
+                    current_uses: couponData.current_uses,
+
+                    // Validity period
+                    valid_from: couponData.valid_from ? couponData.valid_from.toISOString() : null,
+                    valid_until: couponData.valid_until ? couponData.valid_until.toISOString() : null,
+
+                    // Status information
+                    status: couponData.status,
+                    approval_status: couponData.approval_status,
+                    admin_notes: couponData.admin_notes,
+
+                    // Terms and conditions (parse JSON if it's a string)
+                    terms_and_conditions: (() => {
+                        try {
+                            if (!couponData.terms_and_conditions) return [];
+                            if (typeof couponData.terms_and_conditions === 'string') {
+                                return JSON.parse(couponData.terms_and_conditions);
+                            }
+                            return couponData.terms_and_conditions;
+                        } catch (error) {
+                            console.error('Error parsing terms_and_conditions JSON:', error);
+                            console.error('Invalid JSON data:', couponData.terms_and_conditions);
+                            // Return the raw string as a single item array if JSON parsing fails
+                            return [couponData.terms_and_conditions];
                         }
-                        return couponData.terms_and_conditions;
-                    } catch (error) {
-                        console.error('Error parsing terms_and_conditions JSON:', error);
-                        console.error('Invalid JSON data:', couponData.terms_and_conditions);
-                        // Return the raw string as a single item array if JSON parsing fails
-                        return [couponData.terms_and_conditions];
-                    }
-                })(),
-                
-                // Vendor information
-                vendor_id: couponData.vendor_id,
-                vendor: couponData.vendor ? {
-                    id: couponData.vendor.id,
-                    company_info: couponData.vendor.company_info,
-                    status: couponData.vendor.status,
-                    user: couponData.vendor.user ? {
-                        id: couponData.vendor.user.id,
-                        name: couponData.vendor.user.name,
-                        email: couponData.vendor.user.email,
-                        phone: couponData.vendor.user.phone
-                    } : null
-                } : null,
-                
-                // Assigned trek information
-                assigned_trek_id: couponData.assigned_trek_id,
-                assigned_trek_name: couponData.assignedTrek ? couponData.assignedTrek.title : null,
-                assignedTrek: couponData.assignedTrek ? {
-                    id: couponData.assignedTrek.id,
-                    title: couponData.assignedTrek.title,
-                    destination_id: couponData.assignedTrek.destination_id
-                } : null,
-                
-                // Timestamps
-                created_at: couponData.created_at ? couponData.created_at.toISOString() : null,
-                updated_at: couponData.updated_at ? couponData.updated_at.toISOString() : null,
-                
-                // Additional computed fields
-                // Check if expired: valid_until should be valid for the entire day (end of day)
-                is_expired: (() => {
-                    if (!couponData.valid_until) return false;
-                    const validUntil = new Date(couponData.valid_until);
-                    const now = new Date();
-                    // Set valid_until to end of day (23:59:59.999) for comparison
-                    validUntil.setHours(23, 59, 59, 999);
-                    return validUntil < now;
-                })(),
-                is_active: couponData.status === 'active' && couponData.approval_status === 'approved',
-                usage_percentage: couponData.max_uses ? (couponData.current_uses / couponData.max_uses) * 100 : 0,
-                remaining_uses: couponData.max_uses ? couponData.max_uses - couponData.current_uses : null
+                    })(),
+
+                    // Vendor information
+                    vendor_id: couponData.vendor_id,
+                    vendor: couponData.vendor ? {
+                        id: couponData.vendor.id,
+                        company_info: couponData.vendor.company_info,
+                        status: couponData.vendor.status,
+                        user: couponData.vendor.user ? {
+                            id: couponData.vendor.user.id,
+                            name: couponData.vendor.user.name,
+                            email: couponData.vendor.user.email,
+                            phone: couponData.vendor.user.phone
+                        } : null
+                    } : null,
+
+                    // Assigned trek information
+                    assigned_trek_id: couponData.assigned_trek_id,
+                    assigned_trek_name: couponData.assignedTrek ? couponData.assignedTrek.title : null,
+                    assignedTrek: couponData.assignedTrek ? {
+                        id: couponData.assignedTrek.id,
+                        title: couponData.assignedTrek.title,
+                        destination_id: couponData.assignedTrek.destination_id
+                    } : null,
+
+                    // Timestamps
+                    created_at: couponData.created_at ? couponData.created_at.toISOString() : null,
+                    updated_at: couponData.updated_at ? couponData.updated_at.toISOString() : null,
+
+                    // Additional computed fields
+                    // Check if expired: valid_until should be valid for the entire day (end of day)
+                    is_expired: (() => {
+                        if (!couponData.valid_until) return false;
+                        const validUntil = new Date(couponData.valid_until);
+                        const now = new Date();
+                        // Set valid_until to end of day (23:59:59.999) for comparison
+                        validUntil.setHours(23, 59, 59, 999);
+                        return validUntil < now;
+                    })(),
+                    is_active: couponData.status === 'active' && couponData.approval_status === 'approved',
+                    usage_percentage: couponData.max_uses ? (couponData.current_uses / couponData.max_uses) * 100 : 0,
+                    remaining_uses: couponData.max_uses ? couponData.max_uses - couponData.current_uses : null
                 };
             } catch (error) {
                 console.error('Error serializing coupon:', error);
@@ -362,10 +362,10 @@ const getVendorCoupons = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching vendor coupons:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: "Failed to fetch coupons",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -376,7 +376,7 @@ const getVendorCouponById = async (req, res) => {
         // Get vendor ID from URL parameter or from authenticated user
         const vendorId = req.params.vendorId || req.user?.id;
         const couponId = req.params.id;
-        
+
         if (!vendorId) {
             return res.status(400).json({
                 success: false,
@@ -384,13 +384,13 @@ const getVendorCouponById = async (req, res) => {
                 message: "Please provide vendor ID as URL parameter or ensure user is authenticated"
             });
         }
-        
+
         console.log(`Fetching coupon ${couponId} for vendor ${vendorId}`);
 
         const coupon = await Coupon.findOne({
-            where: { 
+            where: {
                 id: couponId,
-                vendor_id: vendorId 
+                vendor_id: vendorId
             },
             include: [
                 {
@@ -416,7 +416,7 @@ const getVendorCouponById = async (req, res) => {
         }
 
         const couponData = coupon.toJSON();
-        
+
         const detailedCoupon = {
             // Basic coupon information
             id: couponData.id,
@@ -424,26 +424,26 @@ const getVendorCouponById = async (req, res) => {
             code: couponData.code,
             description: couponData.description,
             color: couponData.color,
-            
+
             // Discount details
             discount_type: couponData.discount_type,
             discount_value: couponData.discount_value,
             min_amount: couponData.min_amount,
             max_discount_amount: couponData.max_discount_amount,
-            
+
             // Usage limits
             max_uses: couponData.max_uses,
             current_uses: couponData.current_uses,
-            
+
             // Validity period
             valid_from: couponData.valid_from ? couponData.valid_from.toISOString() : null,
             valid_until: couponData.valid_until ? couponData.valid_until.toISOString() : null,
-            
+
             // Status information
             status: couponData.status,
             approval_status: couponData.approval_status,
             admin_notes: couponData.admin_notes,
-            
+
             // Terms and conditions (parse JSON if it's a string)
             terms_and_conditions: (() => {
                 try {
@@ -459,7 +459,7 @@ const getVendorCouponById = async (req, res) => {
                     return [couponData.terms_and_conditions];
                 }
             })(),
-            
+
             // Vendor information
             vendor_id: couponData.vendor_id,
             vendor: couponData.vendor ? {
@@ -473,24 +473,24 @@ const getVendorCouponById = async (req, res) => {
                     phone: couponData.vendor.user.phone
                 } : null
             } : null,
-            
+
             // Timestamps
             created_at: couponData.created_at ? couponData.created_at.toISOString() : null,
             updated_at: couponData.updated_at ? couponData.updated_at.toISOString() : null,
-            
+
             // Additional computed fields
             is_expired: couponData.valid_until ? new Date(couponData.valid_until) < new Date() : false,
             is_active: couponData.status === 'active' && couponData.approval_status === 'approved',
             usage_percentage: couponData.max_uses ? (couponData.current_uses / couponData.max_uses) * 100 : 0,
             remaining_uses: couponData.max_uses ? couponData.max_uses - couponData.current_uses : null,
-            
+
             // Additional computed fields for detailed view
-            days_until_expiry: couponData.valid_until ? 
+            days_until_expiry: couponData.valid_until ?
                 Math.ceil((new Date(couponData.valid_until) - new Date()) / (1000 * 60 * 60 * 24)) : null,
-            is_usable: couponData.status === 'active' && 
-                      couponData.approval_status === 'approved' && 
-                      (!couponData.max_uses || couponData.current_uses < couponData.max_uses) &&
-                      (!couponData.valid_until || new Date(couponData.valid_until) > new Date())
+            is_usable: couponData.status === 'active' &&
+                couponData.approval_status === 'approved' &&
+                (!couponData.max_uses || couponData.current_uses < couponData.max_uses) &&
+                (!couponData.valid_until || new Date(couponData.valid_until) > new Date())
         };
 
         res.json({
@@ -499,10 +499,10 @@ const getVendorCouponById = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching vendor coupon:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: "Failed to fetch coupon",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -614,8 +614,8 @@ const addCoupon = async (req, res) => {
         });
 
         if (existingCoupon) {
-            return res.status(400).json({ 
-                error: "Coupon code already exists for this vendor" 
+            return res.status(400).json({
+                error: "Coupon code already exists for this vendor"
             });
         }
 
@@ -625,34 +625,34 @@ const addCoupon = async (req, res) => {
         const currentDate = new Date();
 
         if (validFromDate < currentDate) {
-            return res.status(400).json({ 
-                error: "Valid from date cannot be in the past" 
+            return res.status(400).json({
+                error: "Valid from date cannot be in the past"
             });
         }
 
         if (validUntilDate <= validFromDate) {
-            return res.status(400).json({ 
-                error: "Valid until date must be after valid from date" 
+            return res.status(400).json({
+                error: "Valid until date must be after valid from date"
             });
         }
 
         // Validate discount_type
         if (!discount_type || !['fixed', 'percentage'].includes(discount_type)) {
-            return res.status(400).json({ 
-                error: "Invalid discount type. Must be 'fixed' or 'percentage'" 
+            return res.status(400).json({
+                error: "Invalid discount type. Must be 'fixed' or 'percentage'"
             });
         }
 
         // Validate discount value based on type
         if (discount_type === "percentage" && (discount_value < 0 || discount_value > 100)) {
-            return res.status(400).json({ 
-                error: "Percentage discount must be between 0 and 100" 
+            return res.status(400).json({
+                error: "Percentage discount must be between 0 and 100"
             });
         }
 
         if (discount_type === "fixed" && discount_value <= 0) {
-            return res.status(400).json({ 
-                error: "Fixed discount must be greater than 0" 
+            return res.status(400).json({
+                error: "Fixed discount must be greater than 0"
             });
         }
 
@@ -688,7 +688,7 @@ const addCoupon = async (req, res) => {
 
         // Log the coupon creation
         await CouponAuditService.logCouponCreation(createdCoupon, vendorId, req);
-        
+
         // If coupon is assigned to a trek, log the assignment
         if (assigned_trek_id) {
             await CouponAuditService.logCouponAssignment(createdCoupon, { id: assigned_trek_id }, vendorId, req);
@@ -701,9 +701,9 @@ const addCoupon = async (req, res) => {
 
     } catch (error) {
         console.error("Error creating coupon:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Failed to create coupon",
-            details: error.message 
+            details: error.message
         });
     }
 };
@@ -713,7 +713,7 @@ const updateCoupon = async (req, res) => {
     try {
         const { id } = req.params;
         const vendorId = req.user.id;
-        
+
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -783,15 +783,16 @@ const updateCoupon = async (req, res) => {
             valid_until: new Date(valid_until),
             terms_and_conditions: terms_and_conditions,
             assigned_trek_id: assigned_trek_id || null,
-            // Reset approval status to pending when edited
+            // Reset approval status to pending and status to inactive when edited
             approval_status: 'pending',
+            status: 'inactive',
             admin_notes: null
         });
 
         // Check if trek assignment changed and log accordingly
         const previousTrekId = previousValues.assigned_trek_id;
         const newTrekId = assigned_trek_id;
-        
+
         if (previousTrekId !== newTrekId) {
             // Trek assignment changed
             if (previousTrekId && newTrekId) {
@@ -875,6 +876,124 @@ const deleteCoupon = async (req, res) => {
     }
 };
 
+// Assign coupon to a trek
+const assignCouponToTrek = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { trek_id } = req.body;
+        const vendorId = req.user.id;
+
+        // Find the coupon and verify ownership and check if eligible
+        const coupon = await Coupon.findOne({
+            where: {
+                id: id,
+                vendor_id: vendorId
+            }
+        });
+
+        if (!coupon) {
+            return res.status(404).json({
+                success: false,
+                error: "Coupon not found or you don't have permission"
+            });
+        }
+
+        if (coupon.approval_status !== 'approved' || coupon.status !== 'active') {
+            return res.status(400).json({
+                success: false,
+                error: "Only approved and active coupons can be assigned to treks"
+            });
+        }
+
+        if (!trek_id) {
+            return res.status(400).json({
+                success: false,
+                error: "Trek ID is required"
+            });
+        }
+
+        const previousTrekId = coupon.assigned_trek_id;
+
+        // Update the coupon
+        await coupon.update({
+            assigned_trek_id: trek_id
+        });
+
+        // Log assignment
+        if (previousTrekId) {
+            await CouponAuditService.logCouponReassignment(coupon, { id: previousTrekId }, { id: trek_id }, vendorId, req);
+        } else {
+            await CouponAuditService.logCouponAssignment(coupon, { id: trek_id }, vendorId, req);
+        }
+
+        res.json({
+            success: true,
+            message: "Coupon assigned successfully",
+            data: coupon
+        });
+    } catch (error) {
+        console.error("Error assigning coupon:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to assign coupon",
+            details: error.message
+        });
+    }
+};
+
+// Unassign coupon from a trek
+const unassignCouponFromTrek = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const vendorId = req.user.id;
+
+        // Find the coupon and verify ownership
+        const coupon = await Coupon.findOne({
+            where: {
+                id: id,
+                vendor_id: vendorId
+            }
+        });
+
+        if (!coupon) {
+            return res.status(404).json({
+                success: false,
+                error: "Coupon not found or you don't have permission"
+            });
+        }
+
+        const previousTrekId = coupon.assigned_trek_id;
+
+        if (!previousTrekId) {
+            return res.status(400).json({
+                success: false,
+                error: "Coupon is not assigned to any trek"
+            });
+        }
+
+        // Update the coupon
+        await coupon.update({
+            assigned_trek_id: null
+        });
+
+        // Log unassignment
+        await CouponAuditService.logCouponUnassignment(coupon, { id: previousTrekId }, vendorId, req);
+
+        res.json({
+            success: true,
+            message: "Coupon unassigned successfully",
+            data: coupon
+        });
+    } catch (error) {
+        console.error("Error unassigning coupon:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to unassign coupon",
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     getCouponsByTrek,
     getVendorCoupons,
@@ -883,4 +1002,6 @@ module.exports = {
     addCoupon,
     updateCoupon,
     deleteCoupon,
+    assignCouponToTrek,
+    unassignCouponFromTrek
 };

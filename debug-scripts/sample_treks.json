@@ -1,0 +1,52 @@
+[
+  {
+    "title": "ooty",
+    "source": "Dehradun",
+    "destination": "N/A",
+    "dates": [
+      "2025-11-02",
+      "2025-11-04",
+      "2025-11-06"
+    ]
+  },
+  {
+    "title": "Kanyakumari",
+    "source": "Bangalore, Hyderabad",
+    "destination": "Kanyakumari",
+    "dates": [
+      "2025-11-13",
+      "2025-11-20",
+      "2025-11-27"
+    ]
+  },
+  {
+    "title": "Anathagri",
+    "source": "nellore",
+    "destination": "Anathagri",
+    "dates": [
+      "2025-11-08",
+      "2025-11-15",
+      "2025-11-22"
+    ]
+  },
+  {
+    "title": "Alleppey",
+    "source": "Bangalore",
+    "destination": "Alleppey",
+    "dates": [
+      "2025-11-09",
+      "2025-11-16",
+      "2025-11-23"
+    ]
+  },
+  {
+    "title": "kerala",
+    "source": "Bangalore",
+    "destination": "Kerala + Kanyakumari",
+    "dates": [
+      "2025-11-08",
+      "2025-11-15",
+      "2025-11-22"
+    ]
+  }
+]

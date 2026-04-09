@@ -1,0 +1,748 @@
+{
+  "User": {
+    "id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": true,
+      "autoIncrement": true,
+      "comment": null
+    },
+    "name": {
+      "type": "VARCHAR(255)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "email": {
+      "type": "VARCHAR(255)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "phone": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "password_hash": {
+      "type": "VARCHAR(255)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "role_id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "prefix": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "status": {
+      "type": "ENUM('active','inactive','locked','ban','suspended')",
+      "allowNull": true,
+      "defaultValue": "active",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "created_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "updated_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    }
+  },
+  "Vendor": {
+    "id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": true,
+      "autoIncrement": true,
+      "comment": null
+    },
+    "user_id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "vin_id": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "company_info": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "status": {
+      "type": "ENUM('active','inactive','suspended','banned')",
+      "allowNull": true,
+      "defaultValue": "inactive",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "address": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_name": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_type": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_entity": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_address": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "gstin": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "account_holder_name": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "bank_name": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "ifsc_code": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "account_number": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "pan_card_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "id_proof_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "cancelled_cheque_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "gstin_certificate_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "msme_certificate_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "shop_establishment_path": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "pan_card_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "id_proof_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "cancelled_cheque_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_logo": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "gstin_certificate_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "msme_certificate_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "shop_establishment_verified": {
+      "type": "TINYINT(1)",
+      "allowNull": true,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "kyc_status": {
+      "type": "ENUM('pending','in_progress','completed','rejected')",
+      "allowNull": true,
+      "defaultValue": "pending",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "city": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "state": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "pincode": {
+      "type": "VARCHAR(200)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "application_status": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": "NEW",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "adhar_no": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "pan_no": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "dob": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "gender": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "status_reason": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "remark": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "kyc_step": {
+      "type": "INT(11)",
+      "allowNull": true,
+      "defaultValue": "1",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "notes": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "suspended_reason": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "business_license_path": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "insurance_policy_path": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "experience_certificate_path": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "suspended_time": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "credit_score": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": "0.00",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "created_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "specialties": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "certifications": {
+      "type": "VARCHAR(200)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "updated_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    }
+  },
+  "Role": {
+    "id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": true,
+      "autoIncrement": true,
+      "comment": null
+    },
+    "name": {
+      "type": "VARCHAR(255)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "description": {
+      "type": "VARCHAR(255)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "prefix": {
+      "type": "LONGTEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "created_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "updated_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    }
+  },
+  "Batch": {
+    "id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": true,
+      "autoIncrement": true,
+      "comment": null
+    },
+    "tbr_id": {
+      "type": "VARCHAR(10)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "Trek Booking Record ID - auto-generated unique identifier"
+    },
+    "trek_id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "start_date": {
+      "type": "DATE",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "end_date": {
+      "type": "DATE",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "capacity": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "booked_slots": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "Number of slots already booked for this batch"
+    },
+    "available_slots": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": "0",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "Number of slots available for booking in this batch"
+    },
+    "captain_id": {
+      "type": "INT(11)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "Reference to assigned captain/guide for this specific batch"
+    },
+    "status": {
+      "type": "VARCHAR(200)",
+      "allowNull": false,
+      "defaultValue": "pending",
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "created_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "updated_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    }
+  },
+  "CouponAuditLog": {
+    "id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": true,
+      "autoIncrement": true,
+      "comment": null
+    },
+    "coupon_id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "vendor_id": {
+      "type": "INT(11)",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "action": {
+      "type": "ENUM('create','update','delete','assign','unassign','reassign','expire','approve','reject','applied','status_change')",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "details": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "JSON string containing action-specific details"
+    },
+    "previous_values": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "JSON string containing previous values for updates"
+    },
+    "new_values": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": "JSON string containing new values for updates"
+    },
+    "trek_id": {
+      "type": "INT(11)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "previous_trek_id": {
+      "type": "INT(11)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "ip_address": {
+      "type": "VARCHAR(45)",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "user_agent": {
+      "type": "TEXT",
+      "allowNull": true,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "created_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    },
+    "updated_at": {
+      "type": "DATETIME",
+      "allowNull": false,
+      "defaultValue": null,
+      "primaryKey": false,
+      "autoIncrement": false,
+      "comment": null
+    }
+  }
+}

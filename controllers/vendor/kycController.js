@@ -5,9 +5,10 @@ const jwt = require("jsonwebtoken");
 const logger = require("../../utils/logger");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
+const { uploadToCloudinary } = require("../../utils/cloudinary");
 
-const JWT_SECRET = process.env.JWT_SECRET || "vendor_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("FATAL: JWT_SECRET environment variable is not set");
 
 // Middleware to verify temp token for KYC process
 const verifyTempToken = (req, res, next) => {
@@ -34,86 +35,90 @@ const verifyTempToken = (req, res, next) => {
     }
 };
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, "../../storage/documents");
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
-    },
-});
-
-const upload = multer({ 
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
-    },
+// Configure multer — memory storage, then upload to Cloudinary
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     fileFilter: (req, file, cb) => {
-        //JPEG, JPG, PNG and WebP
- 
         const allowedTypes = /jpeg|jpg|png|webp|pdf/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
-        
         if (mimetype && extname) {
             return cb(null, true);
-        } else {
-            cb(new Error("Only images (JPEG, PNG,WEBP) and PDF files are allowed"));
         }
-    }
+        cb(new Error("Only images (JPEG, PNG, WebP) and PDF files are allowed"));
+    },
 });
+
+// Upload all buffered files to Cloudinary and attach secure_url as file.path
+const _uploadFilesToCloudinary = async (req) => {
+    if (!req.files) return;
+    await Promise.all(
+        Object.keys(req.files).map(async (fieldName) => {
+            await Promise.all(req.files[fieldName].map(async (file) => {
+                const isPdf = file.mimetype === 'application/pdf';
+                const result = await uploadToCloudinary(file.buffer, {
+                    folder: 'aorbo/kyc-documents',
+                    resource_type: isPdf ? 'raw' : 'image',
+                });
+                file.path = result.secure_url;
+                file.public_id = result.public_id;
+                console.log(`✅ KYC doc uploaded [${fieldName}]: ${result.secure_url}`);
+            }));
+        })
+    );
+};
 
 // Multer middleware for document uploads
 const uploadDocuments = (req, res, next) => {
-    console.log("Multer middleware - uploadDocuments called");
-    console.log("Request content-type:", req.headers['content-type']);
-    console.log("Request method:", req.method);
-    console.log("Request URL:", req.url);
-    console.log("Request headers:", req.headers);
-    
     upload.fields([
         { name: 'panCard', maxCount: 1 },
         { name: 'idProof', maxCount: 1 },
         { name: 'buisness_logo', maxCount: 1 },
-         { name: 'cancelledCheque', maxCount: 1 },
+        { name: 'cancelledCheque', maxCount: 1 },
         { name: 'gstinCertificate', maxCount: 1 },
         { name: 'msmeCertificate', maxCount: 1 },
         { name: 'shopEstablishment', maxCount: 1 },
         { name: 'businessLicense', maxCount: 1 },
         { name: 'insurancePolicy', maxCount: 1 },
         { name: 'experienceCertificate', maxCount: 1 },
-    ])(req, res, (err) => {
+    ])(req, res, async (err) => {
         if (err) {
             console.error("Multer error:", err);
             return res.status(400).json({ success: false, message: err.message });
         }
-        console.log("Multer middleware - files processed:", req.files);
-        console.log("Multer middleware - body after parsing:", req.body);
-        console.log("Multer middleware - files keys:", req.files ? Object.keys(req.files) : "No files");
-        next();
+        try {
+            await _uploadFilesToCloudinary(req);
+            next();
+        } catch (uploadErr) {
+            console.error("Cloudinary upload error:", uploadErr);
+            return res.status(500).json({ success: false, message: 'Document upload failed' });
+        }
     });
 };
 
 // Multer middleware for bank details uploads
 const uploadBankDetails = (req, res, next) => {
-    console.log("Multer middleware - uploadBankDetails called");
-    console.log("Request content-type:", req.headers['content-type']);
-    
-    upload.single('bankDocument')(req, res, (err) => {
+    upload.single('bankDocument')(req, res, async (err) => {
         if (err) {
             console.error("Multer error:", err);
             return res.status(400).json({ success: false, message: err.message });
         }
-        console.log("Multer middleware - file processed:", req.file);
-        console.log("Multer middleware - body after parsing:", req.body);
-        console.log("Multer middleware - files in request:", req.files);
-        console.log("Multer middleware - file field name:", req.file?.fieldname);
+        if (req.file) {
+            try {
+                const isPdf = req.file.mimetype === 'application/pdf';
+                const result = await uploadToCloudinary(req.file.buffer, {
+                    folder: 'aorbo/kyc-documents',
+                    resource_type: isPdf ? 'raw' : 'image',
+                });
+                req.file.path = result.secure_url;
+                req.file.public_id = result.public_id;
+                console.log(`✅ Bank document uploaded: ${result.secure_url}`);
+            } catch (uploadErr) {
+                console.error("Cloudinary upload error:", uploadErr);
+                return res.status(500).json({ success: false, message: 'Document upload failed' });
+            }
+        }
         next();
     });
 };

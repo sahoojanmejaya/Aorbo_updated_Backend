@@ -52,6 +52,11 @@ module.exports = (sequelize, DataTypes) => {
                 references: { model: "trek_captains", key: "id" },
                 comment: "Reference to assigned captain/guide for this specific batch",
             },
+            status: {
+                type: DataTypes.ENUM("active", "completed", "cancelled"),
+                allowNull: false,
+                defaultValue: "active",
+            },
         },
         {
             tableName: "batches",
@@ -85,6 +90,11 @@ module.exports = (sequelize, DataTypes) => {
         Batch.hasMany(models.CancellationBooking, {
             foreignKey: "batch_id",
             as: "cancellations",
+        });
+
+        Batch.hasMany(models.BatchCancellationRequest, {
+            foreignKey: "batch_id",
+            as: "cancellation_requests",
         });
     };
 

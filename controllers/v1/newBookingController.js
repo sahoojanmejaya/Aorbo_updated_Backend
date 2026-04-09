@@ -763,6 +763,20 @@ exports.cancelBooking = async (req, res) => {
             });
         }
 
+        // Block customer from cancelling an ongoing trek
+        if (booking.batch) {
+            const now = new Date();
+            const batchStart = new Date(booking.batch.start_date);
+            const batchEnd = new Date(booking.batch.end_date);
+            if (batchStart <= now && now <= batchEnd) {
+                await transaction.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Cannot cancel a trek that is currently ongoing. Please contact support.",
+                });
+            }
+        }
+
         // Update booking status
         await booking.update({ status: "cancelled" }, { transaction });
 
@@ -923,7 +937,8 @@ exports.getCancellationRefundDetails = async (req, res) => {
                 hasFreeCancellation,
                 timeRemainingHours,
                 bookingId: booking.id,
-                policyName
+                policyName,
+                totalTravelers: booking.total_travelers
             });
 
             // Check if cancellation is allowed
@@ -1085,6 +1100,20 @@ exports.confirmCancellation = async (req, res) => {
             });
         }
 
+        // Block customer from cancelling an ongoing trek
+        if (booking.batch) {
+            const now = new Date();
+            const batchStart = new Date(booking.batch.start_date);
+            const batchEnd = new Date(booking.batch.end_date);
+            if (batchStart <= now && now <= batchEnd) {
+                await transaction.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Cannot cancel a trek that is currently ongoing. Please contact support.",
+                });
+            }
+        }
+
         // Check if cancellation already exists for this booking
         const existingCancellation = await CancellationBooking.findOne({
             where: { booking_id: booking_id }
@@ -1149,6 +1178,16 @@ exports.confirmCancellation = async (req, res) => {
         console.log("- final_payback_amount:", finalPaybackAmount);
         console.log("- deduction_admin:", deductionAdmin);
         console.log("- deduction_vendor:", deductionVendor);
+
+        // Cap refund to amount actually paid
+        const maxRefundable = parseFloat(booking.final_amount || 0);
+        if (totalRefundableAmount > maxRefundable) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                message: `Refund amount (${totalRefundableAmount}) cannot exceed total paid amount (${maxRefundable})`,
+            });
+        }
 
         // Create cancellation record
         const cancellationRecord = await CancellationBooking.create({

@@ -348,7 +348,50 @@ exports.updateBadgeSortOrder = async (req, res) => {
     }
 };
 
-//krishna functions 
+// Toggle badge status (ACTIVE/INACTIVE)
+exports.toggleStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, performerId, performerName } = req.body;
+
+        if (!['ACTIVE', 'INACTIVE'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be ACTIVE or INACTIVE",
+            });
+        }
+
+        const badge = await Badge.findByPk(id);
+        if (!badge) {
+            return res.status(404).json({
+                success: false,
+                message: "Badge not found",
+            });
+        }
+
+        const previousStatus = badge.is_active ? 'ACTIVE' : 'INACTIVE';
+        await badge.update({ is_active: status === 'ACTIVE' });
+
+        // Log the status change (System Audit)
+        // Note: Using a standard audit log pattern if available, otherwise just updating the record
+        console.log(`[AUDIT] Badge ${id} status changed from ${previousStatus} to ${status} by ${performerName || 'Admin'}`);
+
+        res.json({
+            success: true,
+            message: `Badge status updated to ${status}`,
+            data: badge
+        });
+    } catch (error) {
+        console.error("Error toggling badge status:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to toggle badge status",
+            error: error.message,
+        });
+    }
+};
+
+// krishnas functions 
 
 /*exports.toggleStatus = async (req, res) => {
     const { id } = req.params;

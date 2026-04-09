@@ -5,34 +5,76 @@ module.exports = (sequelize, DataTypes) => {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
-                autoIncrement: true,
+                autoIncrement: true
             },
             vendor_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                references: { model: "vendors", key: "id" },
+                references: { model: "vendors", key: "id" }
             },
-            period_start: { type: DataTypes.DATEONLY, allowNull: false },
-            period_end: { type: DataTypes.DATEONLY, allowNull: false },
-            total_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+            booking_ids: {
+                type: DataTypes.JSON,
+                allowNull: false,
+                comment: "Array of booking IDs included in this settlement"
+            },
+            total_amount: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                comment: "Total booking amount"
+            },
+            commission_amount: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                comment: "Platform commission deducted"
+            },
+            payout_amount: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                comment: "Amount paid to vendor"
+            },
+            settlement_date: {
+                type: DataTypes.DATE,
+                allowNull: false
+            },
             status: {
-                type: DataTypes.ENUM("pending", "completed"),
-                defaultValue: "pending",
+                type: DataTypes.ENUM("pending", "processing", "processed", "failed"),
+                defaultValue: "pending"
             },
+            payout_method: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                comment: "Bank transfer, Razorpay payout, etc."
+            },
+            payout_reference: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                comment: "External payout reference ID"
+            },
+            processed_by: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                references: { model: "users", key: "id" }
+            },
+            processed_at: {
+                type: DataTypes.DATE,
+                allowNull: true
+            },
+            notes: {
+                type: DataTypes.TEXT,
+                allowNull: true
+            }
         },
         {
             tableName: "settlements",
-            underscored: true,
             timestamps: true,
+            underscored: true,
+            indexes: [
+                { fields: ["vendor_id"] },
+                { fields: ["status"] },
+                { fields: ["settlement_date"] }
+            ]
         }
     );
-
-    Settlement.associate = (models) => {
-        Settlement.belongsTo(models.Vendor, {
-            foreignKey: "vendor_id",
-            as: "vendor",
-        });
-    };
 
     return Settlement;
 };

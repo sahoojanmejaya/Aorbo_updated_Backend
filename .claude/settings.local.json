@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.js$|^d\")",
+      "Bash(head -5 C:UserssahooAorboTreksbackendbackendseeders/*.js)",
+      "Bash(grep -r vendor_share /c/Users/sahoo/AorboTreks/backend/backend/ --include=*.js)",
+      "Bash(xargs wc:*)",
+      "Bash(grep \"\\\\.js$\")"
+    ]
+  }
+}

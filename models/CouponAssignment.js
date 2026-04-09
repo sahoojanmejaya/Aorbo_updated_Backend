@@ -29,6 +29,13 @@ module.exports = (sequelize, DataTypes) => {
         {
             tableName: "coupon_assignments",
             underscored: true,
+            indexes: [
+                {
+                    unique: true,
+                    fields: ["coupon_id", "customer_id"],
+                    name: "coupon_assignments_unique_idx",
+                },
+            ],
         }
     );
 

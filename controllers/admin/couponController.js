@@ -1,6 +1,7 @@
-const { Coupon, Vendor, User } = require("../../models");
+const { Coupon, CouponAuditLog, Vendor, User } = require("../../models");
 const { validationResult } = require("express-validator");
 const { Op } = require("sequelize");
+const CouponAuditService = require('../../services/couponAuditService');
 
 // Get all coupons with vendor information
 const getAllCoupons = async (req, res) => {
@@ -15,6 +16,11 @@ const getAllCoupons = async (req, res) => {
             sort_by = "created_at",
             sort_order = "DESC"
         } = req.query;
+
+        // Whitelist sort_by to prevent SQL injection / invalid column 500s
+        const allowedSortColumns = ['created_at', 'updated_at', 'valid_from', 'valid_until', 'status', 'approval_status', 'code'];
+        const safeSortBy = allowedSortColumns.includes(sort_by) ? sort_by : 'created_at';
+        const safeSortOrder = sort_order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
         const offset = (page - 1) * limit;
         const whereClause = {};
@@ -59,7 +65,7 @@ const getAllCoupons = async (req, res) => {
                     ]
                 }
             ],
-            order: [[sort_by, sort_order.toUpperCase()]],
+            order: [[safeSortBy, safeSortOrder]],
             limit: parseInt(limit),
             offset: parseInt(offset)
         });

@@ -2,6 +2,8 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        const tables = await queryInterface.showAllTables();
+        if (!tables.includes('refund_settings')) {
         await queryInterface.createTable('refund_settings', {
             id: {
                 type: Sequelize.INTEGER,
@@ -54,8 +56,8 @@ module.exports = {
         });
 
         // Add indexes for better performance
-        await queryInterface.addIndex('refund_settings', ['is_active']);
-        await queryInterface.addIndex('refund_settings', ['created_at']);
+        try { await queryInterface.addIndex('refund_settings', ['is_active']); } catch (_) {}
+        try { await queryInterface.addIndex('refund_settings', ['created_at']); } catch (_) {}
 
         // Insert default refund settings
         await queryInterface.bulkInsert('refund_settings', [{
@@ -66,6 +68,7 @@ module.exports = {
             created_at: new Date(),
             updated_at: new Date()
         }]);
+        }
     },
 
     down: async (queryInterface, Sequelize) => {

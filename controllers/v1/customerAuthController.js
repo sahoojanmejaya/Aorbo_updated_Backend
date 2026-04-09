@@ -73,7 +73,7 @@ exports.firebaseVerify = async (req, res) => {
                 type: "customer",
                 firebase_uid: uid,
             },
-            process.env.JWT_SECRET || "your-secret-key",
+            process.env.JWT_SECRET,
             { expiresIn: "30d" }
         );
 

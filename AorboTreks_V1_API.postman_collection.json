@@ -1,0 +1,1253 @@
+{
+	"info": {
+		"_postman_id": "aorbo-treks-v1-collection",
+		"name": "AorboTreks V1 API",
+		"description": "Complete Postman collection for AorboTreks V1 API — 47 endpoints across 13 categories.\n\nBase URL: {{baseUrl}}/api/v1\n\nAuthentication: Firebase token → JWT Bearer token for protected routes.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"description": "Customer authentication via Firebase. Base: /api/v1/customer/auth",
+			"item": [
+				{
+					"name": "Firebase Verify (Login/Register)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firebaseIdToken\": \"<your_firebase_id_token>\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/auth/firebase-verify",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "auth", "firebase-verify"]
+						},
+						"description": "Verify Firebase ID token and login or register a customer. Returns JWT token for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/auth/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "auth", "profile"]
+						},
+						"description": "Get the authenticated customer's profile including travelers, city, and state."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john@example.com\",\n    \"dateOfBirth\": \"1995-06-15\",\n    \"emergencyContact\": \"9876543210\",\n    \"city_id\": 1,\n    \"state_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/auth/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "auth", "profile"]
+						},
+						"description": "Update the authenticated customer's profile. Supports firstName+lastName or name field."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🏔️ Trek Management",
+			"description": "Trek listing and details. Base: /api/v1/treks. All public (no auth).",
+			"item": [
+				{
+					"name": "Get All Treks",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/treks?page=1&limit=10&destination_id=&city_id=&min_price=&max_price=&duration_days=&start_date=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "treks"],
+							"query": [
+								{ "key": "page", "value": "1", "description": "Page number" },
+								{ "key": "limit", "value": "10", "description": "Items per page" },
+								{ "key": "destination_id", "value": "", "description": "Filter by destination", "disabled": true },
+								{ "key": "city_id", "value": "", "description": "Filter by city", "disabled": true },
+								{ "key": "min_price", "value": "", "description": "Minimum price", "disabled": true },
+								{ "key": "max_price", "value": "", "description": "Maximum price", "disabled": true },
+								{ "key": "duration_days", "value": "", "description": "Filter by duration", "disabled": true },
+								{ "key": "start_date", "value": "", "description": "Filter by start date", "disabled": true }
+							]
+						},
+						"description": "Get all active treks (admin-approved only). Supports pagination and filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trek Details",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/treks/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "treks", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Trek ID" }
+							]
+						},
+						"description": "Get trek details by ID (admin-approved only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trek Batches",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/treks/:id/batches",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "treks", ":id", "batches"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Trek ID" }
+							]
+						},
+						"description": "Get available batches for a specific trek."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trek Reviews",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/treks/:id/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "treks", ":id", "reviews"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Trek ID" }
+							]
+						},
+						"description": "Get reviews for a specific trek."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trek Ratings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/treks/:id/ratings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "treks", ":id", "ratings"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Trek ID" }
+							]
+						},
+						"description": "Get ratings for a specific trek."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💳 Booking Management",
+			"description": "Secure 3-step booking flow. Base: /api/v1/bookings. All require auth.",
+			"item": [
+				{
+					"name": "Step 1 — Calculate Fare",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"batch_id\": 1,\n    \"traveler_count\": 2,\n    \"coupon_code\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/calculate-fare",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bookings", "calculate-fare"]
+						},
+						"description": "Step 1: Server-side fare calculation. Returns fare_token, breakdown, and expires_at."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2 — Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fare_token\": \"<fare_token_from_step_1>\",\n    \"travelers\": [\n        {\n            \"name\": \"John Doe\",\n            \"age\": 28,\n            \"gender\": \"male\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/create-order",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bookings", "create-order"]
+						},
+						"description": "Step 2: Create Razorpay order. Returns order_id, amount, and razorpay_key."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3 — Verify Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"merchant_order_id\": \"<merchant_order_id_from_step_2>\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/verify-payment",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bookings", "verify-payment"]
+						},
+						"description": "Step 3: Verify payment and create booking. Returns booking_id and confirmation status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings?page=1&limit=10&status=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bookings"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" },
+								{ "key": "status", "value": "", "disabled": true }
+							]
+						},
+						"description": "Get authenticated customer's bookings with pagination."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/bookings/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "bookings", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Booking ID" }
+							]
+						},
+						"description": "Get booking details by ID. Validates ownership (customer_id must match)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🎟️ Coupon Management",
+			"description": "Coupon listing, validation, and application. Base: /api/v1/coupons.",
+			"item": [
+				{
+					"name": "Get Available Coupons",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/available",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "available"]
+						},
+						"description": "Get all available coupons (admin-approved only). Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"TREK20\",\n    \"amount\": 5000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/validate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "validate"]
+						},
+						"description": "Validate a coupon code against a booking amount. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Apply Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"coupon_id\": 1,\n    \"booking_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/apply",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "apply"]
+						},
+						"description": "Apply a validated coupon to a booking. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer Coupons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/customer",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "customer"]
+						},
+						"description": "Get coupons for the authenticated customer. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vendor Coupons",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/vendor/:vendorId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "vendor", ":vendorId"],
+							"variable": [
+								{ "key": "vendorId", "value": "1", "description": "Vendor ID" }
+							]
+						},
+						"description": "Get vendor-specific coupons. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trek Coupons",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/coupons/trek/:trekId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "coupons", "trek", ":trekId"],
+							"variable": [
+								{ "key": "trekId", "value": "1", "description": "Trek ID" }
+							]
+						},
+						"description": "Get trek-specific coupons. Public endpoint."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💬 Chat / Messaging",
+			"description": "Customer chat routed through admin. Base: /api/v1/customer/chats. All require auth.",
+			"item": [
+				{
+					"name": "Create or Get Chat",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/chats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "chats"]
+						},
+						"description": "Create a new chat or get existing chat for the authenticated customer. Direct vendor contact is blocked."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chat Messages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/chats/:chatId/messages?page=1&limit=50",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "chats", ":chatId", "messages"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "50" }
+							],
+							"variable": [
+								{ "key": "chatId", "value": "1", "description": "Chat ID" }
+							]
+						},
+						"description": "Get messages for a chat. Verifies chat ownership."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Messages as Read",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/chats/:chatId/read",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "chats", ":chatId", "read"],
+							"variable": [
+								{ "key": "chatId", "value": "1", "description": "Chat ID" }
+							]
+						},
+						"description": "Mark all admin messages in a chat as read."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "⭐ Rating & Review",
+			"description": "Rating and review management. Base: /api/v1/ratings.",
+			"item": [
+				{
+					"name": "Get All Ratings (Paginated)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings?page=1&limit=10&trek_id=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" },
+								{ "key": "trek_id", "value": "", "description": "Filter by trek", "disabled": true }
+							]
+						},
+						"description": "Get all ratings with customer details. Paginated. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Ratings (Unlimited)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings/all?trek_id=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings", "all"],
+							"query": [
+								{ "key": "trek_id", "value": "", "description": "Filter by trek", "disabled": true }
+							]
+						},
+						"description": "Get all ratings without pagination. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Rating",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trek_id\": 1,\n    \"customer_id\": 1,\n    \"booking_id\": 1,\n    \"batch_id\": 1,\n    \"rating_value\": 4.5,\n    \"content\": \"Amazing trek experience! Great views and well-organized.\",\n    \"safety_security_count\": 1,\n    \"organizer_manner_count\": 1,\n    \"trek_planning_count\": 1,\n    \"women_safety_count\": 0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings"]
+						},
+						"description": "Submit a rating and review. rating_value must be 1-5. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer Ratings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings/customer/:customer_id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings", "customer", ":customer_id"],
+							"variable": [
+								{ "key": "customer_id", "value": "1", "description": "Customer ID" }
+							]
+						},
+						"description": "Get all ratings submitted by a specific customer. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rating",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"rating_value\": 5,\n    \"content\": \"Updated review — even better than I initially thought!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Rating ID" }
+							]
+						},
+						"description": "Update an existing rating. Must include customer_id in body for ownership validation. Requires auth."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Rating",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/ratings/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "ratings", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Rating ID" }
+							]
+						},
+						"description": "Delete a rating. Must include customer_id in body for ownership validation. Requires auth."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🚨 Issue Reporting",
+			"description": "Issue/complaint submission. Base: /api/v1/issues. All public.",
+			"item": [
+				{
+					"name": "Submit Issue Report",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"phone_number\": \"9876543210\",\n    \"email\": \"john@example.com\",\n    \"booking_id\": 1,\n    \"issue_type\": \"accommodation_issue\",\n    \"issue_category\": \"others\",\n    \"description\": \"Room was not as described in the listing.\",\n    \"priority\": \"high\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/issues/submit",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "issues", "submit"]
+						},
+						"description": "Submit an issue report.\n\nissue_type: accommodation_issue | trek_services_issue | transportation_issue | other\nissue_category: drunken_driving | rash_unsafe_driving | sexual_harassment | verbal_abuse_assault | others\npriority (optional): low | medium | high | urgent"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Issue Report by ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/issues/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "issues", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Issue Report ID" }
+							]
+						},
+						"description": "Get issue report details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Issues by Booking",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/issues/booking/:booking_id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "issues", "booking", ":booking_id"],
+							"variable": [
+								{ "key": "booking_id", "value": "1", "description": "Booking ID" }
+							]
+						},
+						"description": "Get all issue reports for a specific booking."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "⚖️ Dispute Management",
+			"description": "Booking dispute tracking. Base: /api/v1/booking-dispute. All public.",
+			"item": [
+				{
+					"name": "Get Booking Disputes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/booking-dispute/:bookingId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "booking-dispute", ":bookingId"],
+							"variable": [
+								{ "key": "bookingId", "value": "1", "description": "Booking ID" }
+							]
+						},
+						"description": "Get all disputes for a booking. Returns dispute list, totals, and overall status."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Dispute Status",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"open\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/booking-dispute/:bookingId/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "booking-dispute", ":bookingId", "status"],
+							"variable": [
+								{ "key": "bookingId", "value": "1", "description": "Booking ID" }
+							]
+						},
+						"description": "Update dispute status. Flow: pending → open → in_progress → resolved/closed."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👥 Traveler Management",
+			"description": "CRUD for traveler profiles. Base: /api/v1/customer/travelers. All require auth.",
+			"item": [
+				{
+					"name": "Get All Travelers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers"]
+						},
+						"description": "Get all travelers for the authenticated customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Traveler",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Doe\",\n    \"age\": 25,\n    \"gender\": \"female\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers"]
+						},
+						"description": "Create a new traveler profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Traveler Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Traveler ID" }
+							]
+						},
+						"description": "Get traveler details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Traveler",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Smith\",\n    \"age\": 26,\n    \"gender\": \"female\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Traveler ID" }
+							]
+						},
+						"description": "Update an existing traveler."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Traveler",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Traveler ID" }
+							]
+						},
+						"description": "Soft-delete a traveler profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Traveler Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/travelers/:id/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "travelers", ":id", "bookings"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Traveler ID" }
+							]
+						},
+						"description": "Get booking history for a specific traveler."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🆘 Emergency Contacts",
+			"description": "CRUD for emergency contacts (max 3). Base: /api/v1/customer/emergency-contacts. All require auth.",
+			"item": [
+				{
+					"name": "Get Emergency Contacts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/emergency-contacts",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "emergency-contacts"]
+						},
+						"description": "Get all emergency contacts for the authenticated customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Emergency Contact",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Parent Name\",\n    \"phone\": \"9876543210\",\n    \"relationship\": \"parent\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/emergency-contacts",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "emergency-contacts"]
+						},
+						"description": "Create an emergency contact. Maximum 3 contacts allowed per customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Emergency Contact",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Name\",\n    \"phone\": \"9876543211\",\n    \"relationship\": \"sibling\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/emergency-contacts/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "emergency-contacts", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Emergency Contact ID" }
+							]
+						},
+						"description": "Update an existing emergency contact."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Emergency Contact",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/customer/emergency-contacts/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "customer", "emergency-contacts", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Emergency Contact ID" }
+							]
+						},
+						"description": "Delete an emergency contact."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🌍 Location — States",
+			"description": "State data. Base: /api/v1/states. All public.",
+			"item": [
+				{
+					"name": "Get All States",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/states",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "states"]
+						},
+						"description": "Get all states."
+					},
+					"response": []
+				},
+				{
+					"name": "Search States",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/states/search?q=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "states", "search"],
+							"query": [
+								{ "key": "q", "value": "", "description": "Search query (autocomplete)" }
+							]
+						},
+						"description": "Search states with autocomplete."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Popular States",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/states/popular",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "states", "popular"]
+						},
+						"description": "Get popular states."
+					},
+					"response": []
+				},
+				{
+					"name": "Get States by Region",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/states/region/:region",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "states", "region", ":region"],
+							"variable": [
+								{ "key": "region", "value": "north", "description": "Region name" }
+							]
+						},
+						"description": "Get states filtered by region."
+					},
+					"response": []
+				},
+				{
+					"name": "Get State by ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/states/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "states", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "State ID" }
+							]
+						},
+						"description": "Get state details by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🌍 Location — Cities",
+			"description": "City data. Base: /api/v1/cities. All public.",
+			"item": [
+				{
+					"name": "Get All Cities",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/cities",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "cities"]
+						},
+						"description": "Get all cities."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Popular Cities",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/cities/popular",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "cities", "popular"]
+						},
+						"description": "Get popular cities."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities by State",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/cities/state/:stateId",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "cities", "state", ":stateId"],
+							"variable": [
+								{ "key": "stateId", "value": "1", "description": "State ID" }
+							]
+						},
+						"description": "Get cities filtered by state."
+					},
+					"response": []
+				},
+				{
+					"name": "Get City by ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/cities/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "cities", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "City ID" }
+							]
+						},
+						"description": "Get city details by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🌍 Location — Destinations",
+			"description": "Destination data. Base: /api/v1/destinations. All public.",
+			"item": [
+				{
+					"name": "Get All Destinations",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/destinations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "destinations"]
+						},
+						"description": "Get all destinations."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Popular Destinations",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/destinations/popular",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "destinations", "popular"]
+						},
+						"description": "Get popular destinations."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Destinations by State",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/destinations/state/:state",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "destinations", "state", ":state"],
+							"variable": [
+								{ "key": "state", "value": "1", "description": "State ID or name" }
+							]
+						},
+						"description": "Get destinations filtered by state."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Destination by ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/destinations/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "destinations", ":id"],
+							"variable": [
+								{ "key": "id", "value": "1", "description": "Destination ID" }
+							]
+						},
+						"description": "Get destination details by ID."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

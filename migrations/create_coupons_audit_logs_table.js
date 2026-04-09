@@ -2,6 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    const tables = await queryInterface.showAllTables();
+    if (!tables.includes('coupons_audit_logs')) {
     await queryInterface.createTable('coupons_audit_logs', {
       id: {
         allowNull: false,
@@ -89,11 +91,12 @@ module.exports = {
     });
 
     // Add indexes for better performance
-    await queryInterface.addIndex('coupons_audit_logs', ['coupon_id']);
-    await queryInterface.addIndex('coupons_audit_logs', ['vendor_id']);
-    await queryInterface.addIndex('coupons_audit_logs', ['action']);
-    await queryInterface.addIndex('coupons_audit_logs', ['created_at']);
-    await queryInterface.addIndex('coupons_audit_logs', ['trek_id']);
+    try { await queryInterface.addIndex('coupons_audit_logs', ['coupon_id']); } catch (_) {}
+    try { await queryInterface.addIndex('coupons_audit_logs', ['vendor_id']); } catch (_) {}
+    try { await queryInterface.addIndex('coupons_audit_logs', ['action']); } catch (_) {}
+    try { await queryInterface.addIndex('coupons_audit_logs', ['created_at']); } catch (_) {}
+    try { await queryInterface.addIndex('coupons_audit_logs', ['trek_id']); } catch (_) {}
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

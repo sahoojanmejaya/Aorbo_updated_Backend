@@ -2,6 +2,8 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        const tables = await queryInterface.showAllTables();
+        if (!tables.includes('cancellation_policy_settings')) {
         await queryInterface.createTable('cancellation_policy_settings', {
             id: {
                 type: Sequelize.INTEGER,
@@ -71,8 +73,8 @@ module.exports = {
         });
 
         // Add indexes for better performance
-        await queryInterface.addIndex('cancellation_policy_settings', ['policy_type']);
-        await queryInterface.addIndex('cancellation_policy_settings', ['is_active']);
+        try { await queryInterface.addIndex('cancellation_policy_settings', ['policy_type']); } catch (_) {}
+        try { await queryInterface.addIndex('cancellation_policy_settings', ['is_active']); } catch (_) {}
 
         // Insert default policy settings
         await queryInterface.bulkInsert('cancellation_policy_settings', [
@@ -101,6 +103,7 @@ module.exports = {
                 updated_at: new Date()
             }
         ]);
+        }
     },
 
     down: async (queryInterface, Sequelize) => {

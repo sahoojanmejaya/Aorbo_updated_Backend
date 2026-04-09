@@ -18,9 +18,9 @@ module.exports = {
       });
 
       // Add index for better performance
-      await queryInterface.addIndex('coupons', ['assigned_trek_id'], {
+      try { await queryInterface.addIndex('coupons', ['assigned_trek_id'], {
         name: 'idx_coupons_assigned_trek_id'
-      });
+      }); } catch (_) {}
     }
   },
 

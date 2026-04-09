@@ -150,10 +150,6 @@ exports.getCustomerBookings = async (req, res) => {
             // Add trek_status to the response
             bookingData.trek_status = trek_status;
             
-            // TEST: Force add rating fields to see if they appear
-            bookingData.rating_given = true;
-            bookingData.rating_value = 4.5;
-            
             // Add rating information
             console.log(`Processing booking ${bookingData.id} - customer_id: ${bookingData.customer_id}, trek_id: ${bookingData.trek_id}`);
             
@@ -838,14 +834,17 @@ exports.verifyPayment = async (req, res) => {
             });
 
             if (!traveler) {
-                traveler = await Traveler.create({
-                    id: travelerData.id,
+                const travelerPayload = {
                     customer_id: travelerData.customerId,
                     name: travelerData.name,
                     age: travelerData.age,
                     gender: travelerData.gender,
                     is_active: travelerData.isActive,
-                });
+                };
+                if (travelerData.id) {
+                    travelerPayload.id = travelerData.id;
+                }
+                traveler = await Traveler.create(travelerPayload);
             }
 
             // Create booking traveler relationship
@@ -880,13 +879,14 @@ exports.verifyPayment = async (req, res) => {
         // Log coupon application if coupon was used
         if (appliedCoupon) {
             try {
+                const CouponAuditService = require('../../services/couponAuditService');
                 await CouponAuditService.logCouponApplication(
                     appliedCoupon,
                     booking.id,
                     customerId,
-                    discountAmount,
-                    totalAmount,
-                    calculatedFinalAmount,
+                    couponDiscount,
+                    totalBasicCost,
+                    finalAmount,
                     trekId,
                     batchId,
                     trek.vendor_id,

@@ -78,13 +78,15 @@ module.exports = (sequelize, DataTypes) => {
             // add new fields 
 
              approved_at: {
-                type: DataTypes.STRING,
+                type: DataTypes.DATE,
                 allowNull: true,
+                comment: "Timestamp when trek was approved by admin"
             },
 
              approved_by: {
-                type: DataTypes.STRING,
+                type: DataTypes.INTEGER,
                 allowNull: true,
+                comment: "Admin user ID (users.id) who approved the trek — stored without DB-level FK to avoid constraint errors",
             },
 
 
@@ -171,8 +173,19 @@ module.exports = (sequelize, DataTypes) => {
 },
  rejected_reason: {
   type: DataTypes.TEXT,
-
 },
+            approval_status: {
+                type: DataTypes.STRING(20),
+                allowNull: false,
+                defaultValue: "pending",
+                comment: "Admin approval status: pending | approved | rejected",
+            },
+            visibility: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+                comment: "Admin controlled visibility flag",
+            },
 
             discount_value: {
                 type: DataTypes.DECIMAL(10, 2),

@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const couponController = require("../../controllers/admin/couponController");
-const authMiddleware = require("../../middleware/authMiddleware");
 const { body } = require("express-validator");
 
-// All routes require authentication
-router.use(authMiddleware);
+// NOTE: authMiddleware already applied by admin/index.js before mounting /coupons
+// Do NOT apply it again here to avoid double-auth 500 errors
 
 // Validation middleware for approval/rejection
 const approvalValidation = [

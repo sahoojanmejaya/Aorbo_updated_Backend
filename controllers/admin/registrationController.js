@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const logger = require("../../utils/logger");
 const { Op } = require("sequelize");
 
-const JWT_SECRET = process.env.JWT_SECRET || "vendor_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("FATAL: JWT_SECRET environment variable is not set");
 
 
 exports.register = async (req, res) => {

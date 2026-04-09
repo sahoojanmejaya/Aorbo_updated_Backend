@@ -2,6 +2,8 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        const tables = await queryInterface.showAllTables();
+        if (!tables.includes('cancellation_bookings')) {
         await queryInterface.createTable('cancellation_bookings', {
             id: {
                 type: Sequelize.INTEGER,
@@ -103,17 +105,18 @@ module.exports = {
         });
 
         // Add indexes for better performance
-        await queryInterface.addIndex('cancellation_bookings', ['booking_id']);
-        await queryInterface.addIndex('cancellation_bookings', ['customer_id']);
-        await queryInterface.addIndex('cancellation_bookings', ['trek_id']);
-        await queryInterface.addIndex('cancellation_bookings', ['status']);
-        await queryInterface.addIndex('cancellation_bookings', ['cancellation_date']);
-        
+        try { await queryInterface.addIndex('cancellation_bookings', ['booking_id']); } catch (_) {}
+        try { await queryInterface.addIndex('cancellation_bookings', ['customer_id']); } catch (_) {}
+        try { await queryInterface.addIndex('cancellation_bookings', ['trek_id']); } catch (_) {}
+        try { await queryInterface.addIndex('cancellation_bookings', ['status']); } catch (_) {}
+        try { await queryInterface.addIndex('cancellation_bookings', ['cancellation_date']); } catch (_) {}
+
         // Add unique constraint to prevent duplicate cancellations for same booking
-        await queryInterface.addIndex('cancellation_bookings', ['booking_id'], {
+        try { await queryInterface.addIndex('cancellation_bookings', ['booking_id'], {
             unique: true,
             name: 'unique_booking_cancellation'
-        });
+        }); } catch (_) {}
+        }
     },
 
     down: async (queryInterface, Sequelize) => {

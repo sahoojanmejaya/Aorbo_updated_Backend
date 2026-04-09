@@ -551,15 +551,10 @@ exports.createCompleteTrek = async (req, res) => {
 
             const imagePromises = req.files.map(async (file, index) => {
                 try {
-                    // Multer already saved the file to disk
-                    // We need to get the relative path for database storage
-                    const path = require('path');
-                    const { STORAGE_DIR } = require('../../utils/trekImageUpload');
-                    
-                    // Get relative path from storage directory
-                    const relativePath = path.relative(STORAGE_DIR, file.path);
-                    
-                    uploadedImagePaths.push(file.path);
+                    // file.path is now the Cloudinary secure URL (set by uploadTrekImages middleware)
+                    const cloudinaryUrl = file.path;
+
+                    uploadedImagePaths.push(cloudinaryUrl);
 
                     // Get caption and isCover from req.body (sent via FormData)
                     const caption = req.body[`caption_${index}`] || "";
@@ -568,17 +563,16 @@ exports.createCompleteTrek = async (req, res) => {
                     logger.trek("info", "Creating image record", {
                         requestId,
                         index,
-                        filename: file.filename,
-                        relativePath,
+                        cloudinaryUrl,
                         caption,
                         isCover,
                     });
 
-                    // Create database record with relative path
+                    // Create database record with Cloudinary URL
                     return TrekImage.create(
                         {
                             trek_id: targetTrek.id,
-                            url: relativePath, // Store relative path in database
+                            url: cloudinaryUrl, // Store full Cloudinary URL
                             caption: caption,
                             is_cover: isCover,
                         },

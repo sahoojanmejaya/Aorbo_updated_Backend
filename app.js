@@ -168,6 +168,8 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Static file serving for uploaded images
 app.use("/storage", express.static(path.join(__dirname, "storage")));
+// Support frontend path prefix /arbo-trck-back/storage/...
+app.use("/arbo-trck-back/storage", express.static(path.join(__dirname, "storage")));
 
 // Specific route for trek images
 app.use(

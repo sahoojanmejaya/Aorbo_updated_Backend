@@ -2,6 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    const tables = await queryInterface.showAllTables();
+    if (!tables.includes('banner_items')) {
     await queryInterface.createTable('banner_items', {
       id: {
         allowNull: false,
@@ -140,13 +142,14 @@ module.exports = {
     });
 
     // Add indexes for better performance
-    await queryInterface.addIndex('banner_items', ['banner_type_id']);
-    await queryInterface.addIndex('banner_items', ['status']);
-    await queryInterface.addIndex('banner_items', ['priority']);
-    await queryInterface.addIndex('banner_items', ['start_date']);
-    await queryInterface.addIndex('banner_items', ['end_date']);
-    await queryInterface.addIndex('banner_items', ['created_at']);
-    await queryInterface.addIndex('banner_items', ['deleted_at']);
+    try { await queryInterface.addIndex('banner_items', ['banner_type_id']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['status']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['priority']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['start_date']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['end_date']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['created_at']); } catch (_) {}
+    try { await queryInterface.addIndex('banner_items', ['deleted_at']); } catch (_) {}
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

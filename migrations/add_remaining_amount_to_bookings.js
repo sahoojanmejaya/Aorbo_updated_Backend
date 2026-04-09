@@ -3,12 +3,15 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         // Add remaining_amount column to bookings table
-        await queryInterface.addColumn('bookings', 'remaining_amount', {
-            type: Sequelize.DECIMAL(10, 2),
-            allowNull: true,
-            defaultValue: 0.0,
-            comment: 'Remaining amount to be paid'
-        });
+        const table = await queryInterface.describeTable('bookings');
+        if (!table['remaining_amount']) {
+            await queryInterface.addColumn('bookings', 'remaining_amount', {
+                type: Sequelize.DECIMAL(10, 2),
+                allowNull: true,
+                defaultValue: 0.0,
+                comment: 'Remaining amount to be paid'
+            });
+        }
     },
 
     down: async (queryInterface, Sequelize) => {

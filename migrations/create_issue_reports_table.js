@@ -2,6 +2,8 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        const tables = await queryInterface.showAllTables();
+        if (!tables.includes('issue_reports')) {
         await queryInterface.createTable('issue_reports', {
             id: {
                 type: Sequelize.INTEGER,
@@ -130,12 +132,13 @@ module.exports = {
         });
 
         // Add indexes for better performance
-        await queryInterface.addIndex('issue_reports', ['booking_id']);
-        await queryInterface.addIndex('issue_reports', ['customer_id']);
-        await queryInterface.addIndex('issue_reports', ['status']);
-        await queryInterface.addIndex('issue_reports', ['issue_type']);
-        await queryInterface.addIndex('issue_reports', ['created_at']);
-        await queryInterface.addIndex('issue_reports', ['assigned_to']);
+        try { await queryInterface.addIndex('issue_reports', ['booking_id']); } catch (_) {}
+        try { await queryInterface.addIndex('issue_reports', ['customer_id']); } catch (_) {}
+        try { await queryInterface.addIndex('issue_reports', ['status']); } catch (_) {}
+        try { await queryInterface.addIndex('issue_reports', ['issue_type']); } catch (_) {}
+        try { await queryInterface.addIndex('issue_reports', ['created_at']); } catch (_) {}
+        try { await queryInterface.addIndex('issue_reports', ['assigned_to']); } catch (_) {}
+        }
     },
 
     down: async (queryInterface, Sequelize) => {

@@ -52,11 +52,10 @@ module.exports = (sequelize, DataTypes) => {
         }
     );
 
-    // Associations completely removed to avoid model loading issues
-    // Manual joins will be used in queries when needed
-    // BatchCancellationRequest.associate = (models) => {
-    //     // No associations
-    // };
+    BatchCancellationRequest.associate = (models) => {
+        BatchCancellationRequest.belongsTo(models.Batch, { foreignKey: "batch_id", as: "batch" });
+        BatchCancellationRequest.belongsTo(models.Vendor, { foreignKey: "vendor_id", as: "vendor" });
+    };
 
     return BatchCancellationRequest;
 };

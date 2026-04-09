@@ -251,7 +251,8 @@ function calculateFlexibleRefundV2({
     hasFreeCancellation,
     timeRemainingHours,
     bookingId,
-    policyName
+    policyName,
+    totalTravelers
 }) {
     const refundItems = [];
     const loseItems = [];
@@ -292,8 +293,8 @@ function calculateFlexibleRefundV2({
     // Determine if within 24 hours
     const within24Hours = timeRemainingHours <= 24;
     
-    // Fixed advance amount as per flexible policy requirement
-    const fixedAdvanceAmount = 999;
+    // Fixed advance amount as per flexible policy requirement (₹999 per traveler)
+    const fixedAdvanceAmount = 999 * (totalTravelers || 1);
     
     if (hasFreeCancellation) {
         // Case: free_cancellation = "yes"

@@ -1,60 +1,17 @@
 const db = require("../../models");
 const { BannerItem, BannerType } = db;
 const { Op } = require("sequelize");
-const { uploadBannerItemImages, getRelativePath } = require("../../utils/bannerItemUpload");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
+const { uploadBannerItemImages } = require("../../utils/bannerItemUpload");
+const { uploadBase64ToCloudinary } = require("../../utils/cloudinary");
 
-// Helper function to save base64 image to file system
+// Upload a base64 image to Cloudinary
 const saveBase64Image = async (base64Data, fieldName) => {
-    try {
-        console.log(`Saving base64 image for field: ${fieldName}`);
-        console.log(`Base64 data length: ${base64Data.length}`);
-        
-        // Extract file type from base64 data
-        const matches = base64Data.match(/^data:image\/([a-zA-Z]*);base64,(.+)$/);
-        if (!matches || matches.length !== 3) {
-            throw new Error("Invalid base64 image data format");
-        }
-
-        const imageType = matches[1]; // png, jpg, jpeg, etc.
-        const imageBuffer = Buffer.from(matches[2], "base64");
-
-        console.log(`Image type: ${imageType}, Buffer size: ${imageBuffer.length}`);
-
-        // Generate unique filename
-        const timestamp = Date.now();
-        const randomString = crypto.randomBytes(8).toString("hex");
-        const filename = `${fieldName}-${timestamp}-${randomString}.${imageType}`;
-
-        // Create banner items storage directory if it doesn't exist
-        const storageDir = path.join(__dirname, "../storage");
-        const bannerItemsDir = path.join(storageDir, "banner_items");
-        
-        console.log(`Storage directory: ${storageDir}`);
-        console.log(`Banner items directory: ${bannerItemsDir}`);
-        
-        if (!fs.existsSync(bannerItemsDir)) {
-            fs.mkdirSync(bannerItemsDir, { recursive: true });
-            console.log("Created banner items directory");
-        }
-
-        // Save file
-        const filePath = path.join(bannerItemsDir, filename);
-        fs.writeFileSync(filePath, imageBuffer);
-        
-        console.log(`File saved to: ${filePath}`);
-
-        // Return relative path from storage root
-        const relativePath = `banner_items/${filename}`;
-        console.log(`Returning relative path: ${relativePath}`);
-        return relativePath;
-    } catch (error) {
-        console.error("Error saving base64 image:", error);
-        console.error("Error stack:", error.stack);
-        throw new Error(`Failed to save base64 image: ${error.message}`);
-    }
+    console.log(`☁️ Uploading base64 banner image to Cloudinary [${fieldName}]`);
+    const result = await uploadBase64ToCloudinary(base64Data, {
+        folder: 'aorbo/banner-items',
+    });
+    console.log(`✅ Banner image uploaded: ${result.secure_url}`);
+    return result.secure_url;
 };
 
 // Helper function to process icon URL (handle base64, file paths, and URLs)
@@ -76,28 +33,22 @@ const processIconUrl = async (iconUrl) => {
         }
     }
 
-    // If it's already a proper file path, return as is (but check length)
-    if (iconUrl.includes('banner_items/') || iconUrl.includes('icon_image-')) {
-        if (iconUrl.length > 500) {
-            console.warn("File path too long, setting to null:", iconUrl.substring(0, 50) + "...");
-            return null;
-        }
+    // Already a Cloudinary or valid https URL — store as-is
+    if (iconUrl.startsWith('https://') || iconUrl.startsWith('http://')) {
         return iconUrl;
     }
 
-    // If it's a full URL (like Google search URLs), return null to avoid storing invalid URLs
-    if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
-        console.warn("Invalid URL detected for icon, ignoring:", iconUrl.substring(0, 50) + "...");
-        return null;
+    // Legacy local relative path — keep as-is
+    if (iconUrl.includes('banner_items/') || iconUrl.includes('icon_image-')) {
+        return iconUrl;
     }
 
-    // Safety check: If the string is too long, it's likely base64 or invalid data
+    // Too long / unknown — discard
     if (iconUrl.length > 500) {
-        console.warn("String too long for database field, setting to null:", iconUrl.substring(0, 50) + "...");
+        console.warn("String too long, setting to null:", iconUrl.substring(0, 50) + "...");
         return null;
     }
 
-    // For any other case, return null
     return null;
 };
 
@@ -325,20 +276,9 @@ const createBannerItem = async (req, res) => {
 
         // Process icon URL (handle base64, file uploads, or existing paths)
         if (req.files && req.files.icon_image && req.files.icon_image[0]) {
-            // Handle uploaded icon file - same logic as image upload
-            const fullPath = req.files.icon_image[0].path;
-            iconImagePath = getRelativePath(fullPath);
-            
-            console.log("Icon uploaded as file:");
-            console.log("  Full path:", fullPath);
-            console.log("  Relative path:", iconImagePath);
-            console.log("  Path length:", iconImagePath.length);
-            
-            // Ensure the path is not too long for database
-            if (iconImagePath && iconImagePath.length > 500) {
-                console.error("❌ Icon path too long for database:", iconImagePath.length);
-                iconImagePath = null;
-            }
+            // file.path is the Cloudinary secure URL set by uploadBannerItemImages middleware
+            iconImagePath = req.files.icon_image[0].path;
+            console.log("Icon uploaded to Cloudinary:", iconImagePath);
         } else if (icon_url) {
             // Process icon URL (could be base64, file path, or invalid URL)
             console.log("Processing icon URL:", icon_url.substring(0, 100) + "...");
@@ -353,18 +293,9 @@ const createBannerItem = async (req, res) => {
         
         // Handle main image upload
         if (req.files && req.files.main_image && req.files.main_image[0]) {
-            const fullPath = req.files.main_image[0].path;
-            mainImagePath = getRelativePath(fullPath);
-            console.log("Main image uploaded as file:");
-            console.log("  Full path:", fullPath);
-            console.log("  Relative path:", mainImagePath);
-            console.log("  Path length:", mainImagePath.length);
-            
-            // Ensure the path is not too long for database
-            if (mainImagePath && mainImagePath.length > 500) {
-                console.error("❌ Main image path too long for database:", mainImagePath.length);
-                mainImagePath = null;
-            }
+            // file.path is the Cloudinary secure URL set by uploadBannerItemImages middleware
+            mainImagePath = req.files.main_image[0].path;
+            console.log("Main image uploaded to Cloudinary:", mainImagePath);
         }
 
         console.log("Creating banner item with data:", { 

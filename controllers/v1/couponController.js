@@ -94,12 +94,13 @@ exports.getAvailableCoupons = async (req, res) => {
 // Mobile: Validate coupon code
 exports.validateCoupon = async (req, res) => {
     try {
-        const { code, customer_id, amount } = req.body;
+        const { code, amount } = req.body;
+        const customer_id = req.customer.id; // Extract from authenticated token
 
-        if (!code || !customer_id) {
+        if (!code) {
             return res.status(400).json({
                 success: false,
-                message: "Coupon code and customer ID are required",
+                message: "Coupon code is required",
             });
         }
 
@@ -207,13 +208,31 @@ exports.validateCoupon = async (req, res) => {
 
 // Mobile: Apply coupon (mark as used)
 exports.applyCoupon = async (req, res) => {
+    // Start transaction
+    const transaction = await sequelize.transaction();
     try {
-        const { coupon_id, customer_id, booking_id } = req.body;
+        const { coupon_id, booking_id } = req.body;
+        const customer_id = req.customer.id; // Extract from authenticated token
 
-        if (!coupon_id || !customer_id) {
+        if (!coupon_id) {
+            await transaction.rollback();
             return res.status(400).json({
                 success: false,
-                message: "Coupon ID and customer ID are required",
+                message: "Coupon ID is required",
+            });
+        }
+
+        // Find the coupon with a lock to prevent concurrent usage issues
+        const coupon = await Coupon.findByPk(coupon_id, {
+            transaction,
+            lock: transaction.LOCK.UPDATE
+        });
+
+        if (!coupon) {
+            await transaction.rollback();
+            return res.status(404).json({
+                success: false,
+                message: "Coupon not found",
             });
         }
 
@@ -223,12 +242,39 @@ exports.applyCoupon = async (req, res) => {
                 coupon_id: coupon_id,
                 customer_id: customer_id,
             },
+            transaction
         });
 
         if (existingAssignment) {
+            await transaction.rollback();
             return res.status(400).json({
                 success: false,
                 message: "You have already used this coupon",
+            });
+        }
+
+        // Check usage limit inside the transaction
+        if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "This coupon has reached its usage limit",
+            });
+        }
+
+        const currentDate = new Date();
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        // Check if coupon is expired or inactive inside transaction
+        if (coupon.status !== 'active' || coupon.approval_status !== 'approved' ||
+            new Date(coupon.valid_from) > endOfToday || new Date(coupon.valid_until) < startOfToday) {
+            await transaction.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "This coupon is expired or invalid",
             });
         }
 
@@ -238,27 +284,28 @@ exports.applyCoupon = async (req, res) => {
             customer_id: customer_id,
             booking_id: booking_id || null,
             used_at: new Date(),
-        });
+        }, { transaction });
 
         // Increment coupon usage count
-        await Coupon.increment("current_uses", {
-            where: { id: coupon_id },
-        });
+        await coupon.increment("current_uses", { by: 1, transaction });
 
         // Log the coupon application
         const CouponAuditService = require('../../services/couponAuditService');
         await CouponAuditService.logCouponApplication(
-            coupon, 
-            booking_id, 
-            customer_id, 
+            coupon,
+            booking_id,
+            customer_id,
             null, // discountAmount - not calculated in this endpoint
             null, // originalAmount - not calculated in this endpoint
             null, // finalAmount - not calculated in this endpoint
             null, // trek_id - could be extracted from booking if needed
             null, // batch_id - could be extracted from booking if needed
-            coupon.vendor_id, 
+            coupon.vendor_id,
             req
         );
+
+        // Commit the transaction
+        await transaction.commit();
 
         res.json({
             success: true,
@@ -277,7 +324,7 @@ exports.applyCoupon = async (req, res) => {
 // Mobile: Get customer's used coupons
 exports.getCustomerCoupons = async (req, res) => {
     try {
-        const { customer_id } = req.params;
+        const customer_id = req.customer.id; // Extract from authenticated token
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 

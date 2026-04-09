@@ -43,6 +43,21 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 comment: "JSON object defining badge criteria",
             },
+            styling: {
+                type: DataTypes.JSON,
+                allowNull: true,
+                comment: "JSON object defining badge visual style (colors, gradients, icons)",
+            },
+            gold_limits: {
+                type: DataTypes.JSON,
+                allowNull: true,
+                comment: "JSON object defining usage limits for Gold tier",
+            },
+            platinum_limits: {
+                type: DataTypes.JSON,
+                allowNull: true,
+                comment: "JSON object defining usage limits for Platinum tier",
+            },
             is_active: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,

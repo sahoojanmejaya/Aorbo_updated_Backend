@@ -1,9 +1,11 @@
 const crypto = require("crypto");
 const razorpay = require("../config/razorpay");
 
-// Check if Razorpay is properly configured
+// Check if Razorpay is properly configured and the SDK is loaded
 const isRazorpayConfigured = () => {
-    return process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET;
+    return razorpay !== null &&
+        process.env.RAZORPAY_KEY_ID &&
+        process.env.RAZORPAY_KEY_SECRET;
 };
 
 // Create Razorpay order

@@ -2,39 +2,39 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        // Add cancellation policy fields to bookings table
-        await queryInterface.addColumn('bookings', 'cancellation_policy_type', {
+        const table = await queryInterface.describeTable('bookings');
+
+        const safeAdd = async (col, def) => {
+            if (!table[col]) await queryInterface.addColumn('bookings', col, def);
+        };
+
+        await safeAdd('cancellation_policy_type', {
             type: Sequelize.ENUM('flexible', 'standard'),
             allowNull: true,
             comment: 'Type of cancellation policy selected by customer'
         });
-
-        await queryInterface.addColumn('bookings', 'advance_amount', {
+        await safeAdd('advance_amount', {
             type: Sequelize.DECIMAL(10, 2),
             allowNull: true,
             defaultValue: 0.0,
             comment: 'Amount paid as advance payment'
         });
-
-        await queryInterface.addColumn('bookings', 'policy_version', {
+        await safeAdd('policy_version', {
             type: Sequelize.STRING,
             allowNull: true,
             comment: 'Version/snapshot of policy at booking time'
         });
-
-        await queryInterface.addColumn('bookings', 'deduction_amount', {
+        await safeAdd('deduction_amount', {
             type: Sequelize.DECIMAL(10, 2),
             allowNull: true,
             comment: 'Calculated deduction amount for cancellation'
         });
-
-        await queryInterface.addColumn('bookings', 'refund_amount', {
+        await safeAdd('refund_amount', {
             type: Sequelize.DECIMAL(10, 2),
             allowNull: true,
             comment: 'Calculated refund amount for cancellation'
         });
-
-        await queryInterface.addColumn('bookings', 'cancellation_rule', {
+        await safeAdd('cancellation_rule', {
             type: Sequelize.TEXT,
             allowNull: true,
             comment: 'Rule applied for cancellation calculation'
@@ -43,21 +43,19 @@ module.exports = {
         // Update payment_status enum to include advance_only and full_paid
         await queryInterface.changeColumn('bookings', 'payment_status', {
             type: Sequelize.ENUM(
-                "pending",
-                "partial",
-                "completed",
-                "failed",
-                "refunded",
-                "advance_only",
-                "full_paid"
+                "pending", "partial", "completed", "failed",
+                "refunded", "advance_only", "full_paid"
             ),
             allowNull: false,
             defaultValue: "pending"
         });
 
-        // Add index for better performance on cancellation policy queries
-        await queryInterface.addIndex('bookings', ['cancellation_policy_type']);
-        await queryInterface.addIndex('bookings', ['policy_version']);
+        // Add indexes (safe)
+        const safeAddIndex = async (cols, name) => {
+            try { await queryInterface.addIndex('bookings', cols, { name }); } catch (_) {}
+        };
+        await safeAddIndex(['cancellation_policy_type'], 'bookings_cancellation_policy_type');
+        await safeAddIndex(['policy_version'], 'bookings_policy_version');
     },
 
     down: async (queryInterface, Sequelize) => {

@@ -1,56 +1,9 @@
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const crypto = require("crypto");
-
-// Create trek images storage directory
-const STORAGE_DIR = path.join(__dirname, "../storage");
-const TREK_IMAGES_DIR = path.join(STORAGE_DIR, "trek-images");
-
-if (!fs.existsSync(STORAGE_DIR)) {
-    fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
-
-if (!fs.existsSync(TREK_IMAGES_DIR)) {
-    fs.mkdirSync(TREK_IMAGES_DIR, { recursive: true });
-}
-
-// Configure multer for trek image uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Get vendor ID from auth or request body
-        const vendorId = req.user?.id || req.body.vendorId || '1';
-        const vendorDir = path.join(TREK_IMAGES_DIR, `vendor_${vendorId}`);
-        
-        // Create vendor-specific directory
-        if (!fs.existsSync(vendorDir)) {
-            fs.mkdirSync(vendorDir, { recursive: true });
-        }
-        
-        cb(null, vendorDir);
-    },
-    filename: (req, file, cb) => {
-        // Get vendor ID
-        const vendorId = req.user?.id || req.body.vendorId || '1';
-        
-        // Extract file extension
-        const fileExtension = path.extname(file.originalname).toLowerCase();
-        
-        // Generate unique filename
-        const timestamp = Date.now();
-        const randomString = crypto.randomBytes(8).toString("hex");
-        const filename = `trek_${vendorId}_${timestamp}_${randomString}${fileExtension}`;
-        
-        console.log(`📸 Trek image upload: ${file.originalname} -> ${filename}`);
-        
-        cb(null, filename);
-    },
-});
+const { uploadToCloudinary, deleteFromCloudinary } = require("./cloudinary");
 
 // File filter - only images
 const fileFilter = (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
@@ -58,35 +11,60 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Configure multer
-const upload = multer({ 
-    storage: storage,
+// Use memory storage — files go to Cloudinary, not disk
+const upload = multer({
+    storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit per file
-        files: 5 // Maximum 5 images
+        fileSize: 5 * 1024 * 1024, // 5MB per file
+        files: 5,
     },
-    fileFilter: fileFilter
+    fileFilter,
 });
 
-// Middleware for uploading multiple trek images
-const uploadTrekImages = upload.array('images', 5); // Max 5 images
+// Middleware: run multer, then upload each file buffer to Cloudinary
+const uploadTrekImages = (req, res, next) => {
+    upload.array('images', 5)(req, res, async (err) => {
+        if (err) return res.status(400).json({ success: false, message: err.message });
+        if (!req.files || req.files.length === 0) return next();
 
-// Helper to get relative path for database storage
-const getRelativePath = (fullPath) => {
-    // Return path relative to storage directory
-    return path.relative(STORAGE_DIR, fullPath);
+        const vendorId = req.user?.id || req.body.vendorId || 'unknown';
+
+        try {
+            await Promise.all(req.files.map(async (file) => {
+                console.log(`☁️ Uploading trek image to Cloudinary: ${file.originalname}`);
+                const result = await uploadToCloudinary(file.buffer, {
+                    folder: `aorbo/trek-images/vendor_${vendorId}`,
+                    resource_type: 'image',
+                });
+                // Attach Cloudinary URL so controllers can use file.path as usual
+                file.path = result.secure_url;
+                file.public_id = result.public_id;
+                console.log(`✅ Trek image uploaded: ${result.secure_url}`);
+            }));
+            next();
+        } catch (uploadError) {
+            console.error('Cloudinary upload error:', uploadError);
+            return res.status(500).json({ success: false, message: 'Image upload failed' });
+        }
+    });
 };
 
-// Helper to delete image file
-const deleteImage = (relativePath) => {
+/**
+ * Delete a trek image from Cloudinary by its public_id.
+ * For backward compatibility, also accepts a Cloudinary URL and extracts public_id.
+ */
+const deleteImage = async (publicIdOrUrl) => {
     try {
-        const fullPath = path.join(STORAGE_DIR, relativePath);
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-            console.log(`🗑️ Deleted image: ${relativePath}`);
-            return true;
+        if (!publicIdOrUrl) return false;
+        // If it's a full URL, extract public_id from it
+        let publicId = publicIdOrUrl;
+        if (publicIdOrUrl.startsWith('http')) {
+            // Extract public_id: everything between /upload/v.../  and the file extension
+            const match = publicIdOrUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+            if (match) publicId = match[1];
         }
-        return false;
+        await deleteFromCloudinary(publicId);
+        return true;
     } catch (error) {
         console.error('Error deleting image:', error);
         return false;
@@ -95,9 +73,5 @@ const deleteImage = (relativePath) => {
 
 module.exports = {
     uploadTrekImages,
-    getRelativePath,
     deleteImage,
-    TREK_IMAGES_DIR,
-    STORAGE_DIR
 };
-

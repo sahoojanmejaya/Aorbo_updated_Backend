@@ -14,9 +14,31 @@ module.exports = (sequelize, DataTypes) => {
             },
             vendor_id: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: true,
                 references: { model: "vendors", key: "id" },
-                comment: "Reference to the vendor who created this coupon",
+                comment: "Reference to the vendor who created this coupon (null for admin/platform coupons)",
+            },
+            scope: {
+                type: DataTypes.ENUM('PLATFORM', 'NORMAL', 'SPECIAL', 'PREMIUM', 'INFLUENCER'),
+                allowNull: false,
+                defaultValue: 'NORMAL',
+                comment: 'Admin-defined coupon scope/category',
+            },
+            config: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+                comment: 'JSON-serialised extended config (influencer, commission, tier target, etc.)',
+            },
+            per_user_limit: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                defaultValue: 1,
+                comment: 'Max times a single user can use this coupon (0 = unlimited)',
+            },
+            target_vendor_ids: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+                comment: 'JSON array of vendor IDs this coupon is restricted to (SPECIAL scope)',
             },
             color: {
                 type: DataTypes.STRING,
@@ -72,6 +94,26 @@ module.exports = (sequelize, DataTypes) => {
         {
             tableName: "coupons",
             underscored: true,
+            paranoid: true,
+            indexes: [
+                {
+                    unique: true,
+                    fields: ["code"],
+                    name: "coupons_code_idx",
+                },
+                {
+                    fields: ["vendor_id"],
+                    name: "coupons_vendor_id_idx",
+                },
+                {
+                    fields: ["status"],
+                    name: "coupons_status_idx",
+                },
+                {
+                    fields: ["approval_status"],
+                    name: "coupons_approval_status_idx",
+                },
+            ],
         }
     );
 
